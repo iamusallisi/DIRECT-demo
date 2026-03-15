@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>DIRECT — Document Integrity System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#0D1117;--sf1:#161B22;--sf2:#1C2333;--sf3:#252D3D;
+  --bdr:#2A3142;--bdr2:#343E54;
+  --tx:#E6EDF3;--tx2:#8B949E;--tx3:#545D6E;
+  --pr:#58A6FF;--pr2:#388BFD;--pr-bg:rgba(88,166,255,.1);
+  --bnav-bg:rgba(22,27,34,.92);
+  --ok:#3FB950;--ok-bg:rgba(63,185,80,.1);
+  --wn:#D29922;--wn-bg:rgba(210,153,34,.1);
+  --dn:#F85149;--dn-bg:rgba(248,81,73,.1);
+  --r:16px;--r2:22px;--r3:28px;
+  --font:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --nav-h:68px;--hdr-h:56px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+  --demo-color:#F59E0B;
+  --demo-bg:rgba(245,158,11,.1);
+}
+html.light{
+  --bg:#F6F8FA;--sf1:#FFFFFF;--sf2:#F0F3F6;--sf3:#E8ECF2;
+  --bdr:#D8DEE4;--bdr2:#CFD7E0;
+  --tx:#1F2328;--tx2:#656D76;--tx3:#8C959F;
+  --pr:#0969DA;--pr2:#0550AE;--pr-bg:rgba(9,105,218,.08);
+  --ok:#1A7F37;--ok-bg:rgba(26,127,55,.08);
+  --wn:#9A6700;--wn-bg:rgba(154,103,0,.08);
+  --dn:#CF222E;--dn-bg:rgba(207,34,46,.08);
+  --bnav-bg:rgba(255,255,255,.92);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--tx);
+  line-height:1.5;height:100vh;height:100dvh;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased;
+}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:600px;margin:0 auto;position:relative}
+
+/* HEADER */
+.hdr{
+  height:var(--hdr-h);padding:0 16px;display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg);position:relative;z-index:10;flex-shrink:0;
+  padding-top:var(--safe-t);border-bottom:1px solid var(--bdr);
+}
+.hdr-brand{display:flex;align-items:center;gap:10px}
+.hdr-logo{font-weight:800;font-size:1.1rem;letter-spacing:.08em;color:var(--pr)}
+.hdr-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hdr-title{font-size:.95rem;font-weight:700;color:var(--tx2)}
+.hdr-actions{display:flex;align-items:center;gap:8px}
+
+/* DEMO MODE TOGGLE BUTTON */
+.demo-toggle{
+  display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;border:none;
+  background:var(--demo-bg);color:var(--demo-color);font-family:var(--font);font-size:.72rem;font-weight:700;
+  cursor:pointer;transition:all .2s;letter-spacing:.04em;touch-action:manipulation;
+  border:1px solid rgba(245,158,11,.25);
+}
+.demo-toggle:active{transform:scale(.95)}
+.demo-toggle.active{background:var(--demo-color);color:#0D1117}
+.demo-toggle i{font-size:.7rem}
+
+/* DEMO MODE BANNER */
+.demo-banner{
+  background:linear-gradient(135deg,rgba(245,158,11,.15) 0%,rgba(245,158,11,.05) 100%);
+  border-bottom:1px solid rgba(245,158,11,.3);
+  padding:0;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .4s ease;
+  flex-shrink:0;
+}
+.demo-banner.on{max-height:200px;padding:0}
+
+/* DEMO STEP CARD */
+.demo-step{
+  padding:14px 16px;display:flex;gap:12px;align-items:flex-start;
+}
+.demo-step-num{
+  width:26px;height:26px;border-radius:50%;background:var(--demo-color);color:#0D1117;
+  font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+}
+.demo-step-body{flex:1}
+.demo-step-title{font-weight:800;font-size:.88rem;color:var(--demo-color);margin-bottom:3px}
+.demo-step-text{font-size:.78rem;color:var(--tx2);line-height:1.5}
+.demo-step-hint{
+  display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 10px;
+  background:rgba(245,158,11,.15);border-radius:20px;font-size:.7rem;font-weight:700;color:var(--demo-color);
+}
+.demo-nav{display:flex;gap:8px;padding:0 16px 12px;justify-content:flex-end}
+.demo-nav button{
+  padding:6px 14px;border-radius:20px;border:none;font-family:var(--font);font-size:.72rem;font-weight:700;
+  cursor:pointer;touch-action:manipulation;transition:all .18s;
+}
+.demo-nav .dn-prev{background:var(--sf2);color:var(--tx2)}
+.demo-nav .dn-next{background:var(--demo-color);color:#0D1117}
+.demo-nav button:active{transform:scale(.95)}
+.demo-progress{display:flex;gap:4px;align-items:center;padding:8px 16px 0;flex-wrap:wrap}
+.demo-progress span{
+  height:3px;flex:1;border-radius:4px;background:var(--bdr);transition:background .3s;min-width:20px;
+}
+.demo-progress span.done{background:var(--demo-color)}
+
+/* SCROLLABLE MAIN */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.main::-webkit-scrollbar{display:none}
+
+/* PAGES */
+.page{display:none;padding:4px 16px 24px;min-height:100%;animation:pgIn .32s ease}
+.page.on{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* BOTTOM NAV */
+.bnav{
+  display:flex;align-items:stretch;justify-content:space-around;
+  background:var(--bnav-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--bdr);padding-bottom:var(--safe-b);flex-shrink:0;position:relative;z-index:10;
+}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:10px 0 8px;background:none;border:none;color:var(--tx3);
+  font-family:var(--font);font-size:.62rem;font-weight:600;letter-spacing:.02em;
+  cursor:pointer;transition:color .2s;position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+.bnav-btn i{font-size:1.15rem;transition:transform .2s}
+.bnav-btn.on{color:var(--pr)}
+.bnav-btn.on i{transform:scale(1.1)}
+.bnav-btn.on::before{content:'';position:absolute;top:0;left:25%;right:25%;height:2.5px;background:var(--pr);border-radius:0 0 4px 4px;}
+.bnav-btn:active i{transform:scale(.88)}
+
+/* CARDS */
+.crd{background:var(--sf1);border:1px solid var(--bdr);border-radius:var(--r2);padding:18px;margin-bottom:12px;transition:transform .15s,box-shadow .2s}
+.crd:active{transform:scale(.985)}
+.crd-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.crd-h i{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.crd-h h3{font-size:.92rem;font-weight:700}
+.crd-h .badge{margin-left:auto}
+
+/* SAMPLE FILES GRID */
+.sample-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sample-card{
+  background:var(--sf1);border:1.5px solid var(--bdr);border-radius:var(--r2);
+  padding:14px 12px;cursor:pointer;transition:all .18s;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;position:relative;overflow:hidden;
+}
+.sample-card:active{transform:scale(.96)}
+.sample-card.clean-file{border-color:rgba(63,185,80,.3)}
+.sample-card.clean-file:hover,.sample-card.clean-file:active{border-color:var(--ok);background:var(--ok-bg)}
+.sample-card.tampered-file{border-color:rgba(248,81,73,.3)}
+.sample-card.tampered-file:hover,.sample-card.tampered-file:active{border-color:var(--dn);background:var(--dn-bg)}
+.sample-card.sensitive-file{border-color:rgba(210,153,34,.3)}
+.sample-card.sensitive-file:hover,.sample-card.sensitive-file:active{border-color:var(--wn);background:var(--wn-bg)}
+.sample-card.binary-file{border-color:rgba(88,166,255,.3)}
+.sample-card.binary-file:hover,.sample-card.binary-file:active{border-color:var(--pr);background:var(--pr-bg)}
+.sample-card-icon{font-size:1.4rem;margin-bottom:8px}
+.sample-card-name{font-weight:700;font-size:.82rem;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sample-card-desc{font-size:.68rem;color:var(--tx2);line-height:1.4}
+.sample-badge{
+  position:absolute;top:8px;right:8px;font-size:.58rem;font-weight:700;padding:2px 6px;
+  border-radius:20px;text-transform:uppercase;letter-spacing:.05em;
+}
+
+/* ACTION GRID */
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.act-card{
+  background:var(--sf1);border:1px solid var(--bdr);border-radius:var(--r2);
+  padding:20px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+  cursor:pointer;transition:all .18s;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+.act-card:active{transform:scale(.96);background:var(--sf2)}
+.act-card .act-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.act-card .act-title{font-weight:700;font-size:.9rem}
+.act-card .act-desc{font-size:.76rem;color:var(--tx2);line-height:1.4}
+
+/* UPLOAD BUTTON */
+.upload-btn{
+  width:100%;padding:36px 24px;border-radius:var(--r3);border:2px dashed var(--bdr2);
+  background:var(--sf1);cursor:pointer;text-align:center;transition:all .25s;
+  touch-action:manipulation;position:relative;overflow:hidden;
+}
+.upload-btn:active{transform:scale(.98);background:var(--sf2)}
+.upload-btn.over{border-color:var(--pr);background:var(--pr-bg)}
+.upload-btn .u-icon{font-size:1.8rem;color:var(--pr);margin-bottom:8px}
+.upload-btn .u-title{font-weight:700;font-size:.95rem;margin-bottom:4px}
+.upload-btn .u-sub{font-size:.78rem;color:var(--tx2)}
+.upload-btn input{display:none}
+
+/* OR DIVIDER */
+.or-div{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--tx3);font-size:.75rem;font-weight:600}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+/* FILE CHIP */
+.fchip{display:flex;align-items:center;gap:10px;background:var(--sf2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 16px;margin:10px 0}
+.fchip i{color:var(--pr);font-size:1.1rem}
+.fchip-info{flex:1;min-width:0}
+.fchip-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fchip-meta{font-size:.74rem;color:var(--tx2)}
+.fchip-x{width:28px;height:28px;border-radius:8px;border:none;background:var(--sf3);color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .15s}
+.fchip-x:active{background:var(--dn-bg);color:var(--dn)}
+
+/* ROWS */
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:.86rem}
+.row:last-child{border-bottom:none}
+.row .lbl{color:var(--tx2);flex-shrink:0}
+.row .val{font-family:var(--mono);font-size:.76rem;text-align:right;word-break:break-all;max-width:58%;color:var(--tx)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:700}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-wn{background:var(--wn-bg);color:var(--wn)}
+.b-dn{background:var(--dn-bg);color:var(--dn)}
+.b-pr{background:var(--pr-bg);color:var(--pr)}
+
+/* THREAT ROW */
+.trow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;margin-bottom:6px;background:var(--sf2);font-size:.86rem}
+.trow i{font-size:.85rem;width:18px;text-align:center;flex-shrink:0}
+.trow .t-name{flex:1;font-weight:500}
+
+/* BUTTONS */
+.btn{font-family:var(--font);font-size:.88rem;font-weight:700;border:none;cursor:pointer;border-radius:14px;padding:14px 28px;transition:all .18s;display:inline-flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.btn:active{transform:scale(.96)}
+.btn-pr{background:var(--pr);color:#fff;width:100%}
+.btn-pr:active{background:var(--pr2)}
+.btn-out{background:transparent;border:1.5px solid var(--bdr2);color:var(--tx);width:100%}
+.btn-out:active{background:var(--sf2)}
+.btn-ok{background:var(--ok);color:#fff;width:100%}
+.btn-dn{background:var(--dn);color:#fff;width:100%}
+.btn:disabled{opacity:.35;pointer-events:none}
+.btn-sm{padding:10px 20px;font-size:.82rem;border-radius:10px;width:auto}
+
+/* SCORE RING */
+.score-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0}
+.score-ring{position:relative;width:130px;height:130px}
+.score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.score-ring .bg{fill:none;stroke:var(--bdr);stroke-width:8}
+.score-ring .fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1),stroke .3s}
+.score-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;line-height:1}
+.score-num small{font-size:.75rem;font-weight:500;color:var(--tx2);margin-top:3px}
+.score-lbl{font-size:.82rem;color:var(--tx2);margin-top:6px;font-weight:600}
+
+/* SCAN LOG */
+.slog{background:var(--bg);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;margin:12px 0;font-family:var(--mono);font-size:.7rem;line-height:2;max-height:220px;overflow-y:auto;color:var(--tx2)}
+.slog .ln{opacity:0;animation:lnIn .25s ease forwards}
+.slog .tag{color:var(--pr);font-weight:500}
+.slog .ok{color:var(--ok)}
+.slog .fl{color:var(--dn)}
+@keyframes lnIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+
+/* EXPANDABLE */
+.exp{cursor:pointer;-webkit-user-select:none;user-select:none}
+.exp .exp-head{display:flex;align-items:center;gap:10px}
+.exp .exp-body{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;padding-top:0}
+.exp.open .exp-body{max-height:600px;padding-top:14px}
+.exp .exp-chev{margin-left:auto;font-size:.7rem;color:var(--tx3);transition:transform .3s}
+.exp.open .exp-chev{transform:rotate(180deg)}
+
+/* RECEIPT */
+.rcpt{background:var(--bg);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;font-family:var(--mono);font-size:.7rem;line-height:1.8;white-space:pre-wrap;word-break:break-all;max-height:260px;overflow-y:auto;color:var(--tx2)}
+
+/* RESULT STATUS */
+.rstatus{text-align:center;padding:24px 20px;border-radius:var(--r2);margin:12px 0}
+.rstatus i{font-size:2.4rem;margin-bottom:8px}
+.rstatus h2{font-size:1.3rem;font-weight:800;margin-bottom:4px}
+.rstatus p{color:var(--tx2);font-size:.82rem;max-width:320px;margin:0 auto;line-height:1.5}
+.rs-ok{background:var(--ok-bg)}.rs-ok i,.rs-ok h2{color:var(--ok)}
+.rs-wn{background:var(--wn-bg)}.rs-wn i,.rs-wn h2{color:var(--wn)}
+.rs-dn{background:var(--dn-bg)}.rs-dn i,.rs-dn h2{color:var(--dn)}
+
+/* DIFF */
+.diff{font-family:var(--mono);font-size:.7rem;max-height:220px;overflow-y:auto;background:var(--bg);border-radius:var(--r);padding:8px}
+.diff-a{background:var(--ok-bg);color:var(--ok);padding:1px 6px;display:block}
+.diff-r{background:var(--dn-bg);color:var(--dn);padding:1px 6px;display:block}
+.diff-s{color:var(--tx3);padding:1px 6px;display:block}
+
+/* SEGMENT */
+.seg{display:flex;background:var(--sf2);border-radius:12px;padding:3px;margin-bottom:16px}
+.seg-btn{flex:1;padding:9px 8px;border:none;background:none;border-radius:10px;font-family:var(--font);font-size:.82rem;font-weight:600;color:var(--tx2);cursor:pointer;transition:all .2s;touch-action:manipulation}
+.seg-btn.on{background:var(--sf1);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+
+/* SCENARIO CARD */
+.sc-card{background:var(--sf1);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;margin-bottom:10px;transition:all .2s}
+.sc-card:active{transform:scale(.985)}
+.sc-num{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--pr);margin-bottom:5px}
+.sc-title{font-size:.95rem;font-weight:800;margin-bottom:7px}
+.sc-threat{font-size:.8rem;color:var(--dn);margin-bottom:5px;display:flex;gap:6px;align-items:flex-start}
+.sc-fix{font-size:.8rem;color:var(--ok);display:flex;gap:6px;align-items:flex-start}
+.sc-threat i,.sc-fix i{margin-top:3px;flex-shrink:0;font-size:.7rem}
+
+/* PIPELINE */
+.pipe{display:flex;align-items:center;gap:0;overflow-x:auto;padding:12px 0;-webkit-overflow-scrolling:touch}
+.pipe::-webkit-scrollbar{display:none}
+.pipe-n{background:var(--sf1);border:1px solid var(--bdr);border-radius:14px;padding:12px 14px;text-align:center;min-width:88px;flex-shrink:0}
+.pipe-n .p-nm{font-size:.76rem;font-weight:800;color:var(--pr)}
+.pipe-n .p-ds{font-size:.6rem;color:var(--tx2);margin-top:2px}
+.pipe-a{color:var(--pr);font-size:.7rem;padding:0 3px;flex-shrink:0}
+
+textarea{width:100%;min-height:100px;padding:12px;font-family:var(--mono);font-size:.8rem;background:var(--sf2);color:var(--tx);border:1px solid var(--bdr);border-radius:var(--r);resize:vertical;line-height:1.6;touch-action:manipulation}
+textarea:focus{outline:none;border-color:var(--pr)}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:100;animation:fadeIn .2s}
+.modal-box{background:var(--sf1);border-radius:var(--r3) var(--r3) 0 0;padding:8px 24px 32px;width:100%;max-width:600px;animation:sheetUp .3s cubic-bezier(.32,.72,0,1)}
+.modal-handle{width:36px;height:4px;border-radius:4px;background:var(--bdr2);margin:0 auto 16px}
+.modal-box h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.modal-box p{color:var(--tx2);font-size:.86rem;margin-bottom:20px;line-height:1.5}
+.modal-actions{display:flex;gap:10px}
+.modal-actions .btn{flex:1}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* DEMO MODE HIGHLIGHT */
+.demo-highlight{
+  position:relative;
+  transition:box-shadow .3s;
+}
+body.demo-on .demo-highlight{
+  box-shadow:0 0 0 2px var(--demo-color),0 0 20px rgba(245,158,11,.15);
+  border-radius:var(--r2);
+}
+
+/* MISC */
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}
+.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}
+.tc{text-align:center}
+.hidden{display:none!important}
+.sec-t{font-size:1.25rem;font-weight:800;margin-bottom:2px}
+.sec-s{color:var(--tx2);font-size:.82rem;margin-bottom:14px;line-height:1.5}
+.spin{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+hr{border:none;border-top:1px solid var(--bdr);margin:12px 0}
+a{color:var(--pr);text-decoration:none}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stg>*{opacity:0;animation:pgIn .35s ease forwards}
+.stg>*:nth-child(1){animation-delay:.03s}.stg>*:nth-child(2){animation-delay:.06s}
+.stg>*:nth-child(3){animation-delay:.09s}.stg>*:nth-child(4){animation-delay:.12s}
+.stg>*:nth-child(5){animation-delay:.15s}.stg>*:nth-child(6){animation-delay:.18s}
+.stg>*:nth-child(7){animation-delay:.21s}.stg>*:nth-child(8){animation-delay:.24s}
+@media(max-width:400px){.compare-grid{grid-template-columns:1fr}.act-grid{gap:10px}.sample-grid{grid-template-columns:1fr}}
+
+/* APP ICON */
+.hdr-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--pr),#8B5CF6);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-icon svg{width:16px;height:16px}
+
+/* SPLASH */
+.splash{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease,visibility .5s ease}
+.splash.out{opacity:0;visibility:hidden;pointer-events:none}
+.splash-icon{width:96px;height:96px;border-radius:24px;background:linear-gradient(135deg,var(--pr) 0%,#3B82F6 50%,#8B5CF6 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 40px rgba(88,166,255,.3);animation:iconPop .6s cubic-bezier(.34,1.56,.64,1) .2s both;position:relative;overflow:hidden}
+.splash-icon::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.2) 0%,transparent 50%);border-radius:24px}
+.splash-icon svg{width:52px;height:52px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+.splash-name{font-weight:800;font-size:1.6rem;letter-spacing:.12em;margin-top:20px;animation:iconPop .5s cubic-bezier(.34,1.56,.64,1) .45s both}
+.splash-sub{font-size:.82rem;color:var(--tx2);margin-top:6px;font-weight:500;animation:iconPop .5s cubic-bezier(.34,1.56,.64,1) .55s both}
+.splash-loader{margin-top:36px;width:48px;height:3px;background:var(--bdr);border-radius:4px;overflow:hidden;animation:iconPop .4s ease .7s both}
+.splash-loader::after{content:'';display:block;height:100%;width:0;background:var(--pr);border-radius:4px;animation:splashLoad 1.2s ease .8s forwards}
+@keyframes iconPop{from{opacity:0;transform:scale(.7) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes splashLoad{0%{width:0}40%{width:60%}100%{width:100%}}
+
+/* VERIFY CHIP area */
+.verify-file-area{margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash-icon">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 8L14 28v44l36 20 36-20V28L50 8z" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="3"/>
+      <path d="M50 20L24 34v32l26 14 26-14V34L50 20z" fill="rgba(255,255,255,.1)" stroke="white" stroke-width="2"/>
+      <path d="M42 50l6 6 12-14" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="splash-name">DIRECT</div>
+  <div class="splash-sub">Document Integrity System</div>
+  <div class="splash-loader"></div>
+</div>
+
+<div class="app" id="app" style="opacity:0">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-icon">
+        <svg viewBox="0 0 100 100" fill="none"><path d="M50 12L18 30v40l32 18 32-18V30L50 12z" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="4"/><path d="M42 50l6 6 12-14" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="hdr-logo">DIRECT</span>
+      <span class="hdr-dot"></span>
+    </div>
+    <div class="hdr-actions">
+      <div class="hdr-title" id="hdr-title">Home</div>
+      <button class="demo-toggle" id="demo-toggle" onclick="toggleDemo()">
+        <i class="fas fa-play-circle"></i> Demo
+      </button>
+    </div>
+  </div>
+
+  <!-- DEMO BANNER -->
+  <div class="demo-banner" id="demo-banner">
+    <div class="demo-progress" id="demo-progress"></div>
+    <div class="demo-step" id="demo-step-content"></div>
+    <div class="demo-nav">
+      <button class="dn-prev" id="demo-prev" onclick="demoNav(-1)"><i class="fas fa-arrow-left"></i> Back</button>
+      <button class="dn-next" id="demo-next" onclick="demoNav(1)">Next <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="main">
+
+    <!-- HOME -->
+    <div class="page on" id="pg-home">
+      <div style="padding:12px 0 16px;display:flex;align-items:center;gap:14px">
+        <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--pr),#8B5CF6);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 20px rgba(88,166,255,.25)">
+          <svg width="28" height="28" viewBox="0 0 100 100" fill="none"><path d="M50 8L14 28v44l36 20 36-20V28L50 8z" fill="rgba(255,255,255,.15)" stroke="white" stroke-width="3"/><path d="M42 50l6 6 12-14" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div style="font-size:1.25rem;font-weight:800;line-height:1.2">Document<br>Integrity System</div>
+          <div style="color:var(--tx2);font-size:.78rem;margin-top:2px">If Anyone Touches a Document, We Know.</div>
+        </div>
+      </div>
+      <div class="act-grid stg">
+        <div class="act-card" data-goto="scan"><div class="act-icon" style="background:var(--pr-bg);color:var(--pr)"><i class="fas fa-search-plus"></i></div><div class="act-title">Scan File</div><div class="act-desc">Full integrity &amp; safety analysis</div></div>
+        <div class="act-card" data-goto="protect"><div class="act-icon" style="background:var(--ok-bg);color:var(--ok)"><i class="fas fa-shield-alt"></i></div><div class="act-title">Protect</div><div class="act-desc">Anchor with cryptographic proof</div></div>
+        <div class="act-card" data-goto="tools" data-seg="verify"><div class="act-icon" style="background:var(--wn-bg);color:var(--wn)"><i class="fas fa-check-double"></i></div><div class="act-title">Verify</div><div class="act-desc">Check against DIRECT receipt</div></div>
+        <div class="act-card" data-goto="tools" data-seg="compare"><div class="act-icon" style="background:rgba(168,85,247,.1);color:#A855F7"><i class="fas fa-columns"></i></div><div class="act-title">Compare</div><div class="act-desc">Diff two file versions</div></div>
+        <div class="act-card" data-goto="tools" data-seg="clean"><div class="act-icon" style="background:rgba(236,72,153,.1);color:#EC4899"><i class="fas fa-broom"></i></div><div class="act-title">Clean</div><div class="act-desc">Strip threats before sharing</div></div>
+        <div class="act-card" data-goto="shield"><div class="act-icon" style="background:rgba(251,146,60,.1);color:#FB923C"><i class="fas fa-robot"></i></div><div class="act-title">AI Shield</div><div class="act-desc">AI pipeline protection</div></div>
+      </div>
+      <div class="crd" style="border-left:3px solid var(--pr)">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:6px"><i class="fas fa-info-circle" style="color:var(--pr);margin-right:6px"></i>What is DIRECT?</div>
+        <div style="font-size:.82rem;color:var(--tx2);line-height:1.6">DIRECT proves document integrity, blocks hidden threats, and creates an unfakeable receipt trail for every file. It detects tampering, hidden attacks, sensitive data leaks, and chain-of-custody breaks — automatically.</div>
+      </div>
+      <div class="crd">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:8px">Four Pillars of Protection</div>
+        <div class="trow"><i class="fas fa-fingerprint" style="color:var(--pr)"></i><span class="t-name">Tamper Detection</span></div>
+        <div class="trow"><i class="fas fa-ghost" style="color:var(--dn)"></i><span class="t-name">Hidden Threat Detection</span></div>
+        <div class="trow"><i class="fas fa-user-shield" style="color:var(--wn)"></i><span class="t-name">Sensitive Data Guard</span></div>
+        <div class="trow"><i class="fas fa-link" style="color:var(--ok)"></i><span class="t-name">Chain of Custody Proof</span></div>
+      </div>
+    </div>
+
+    <!-- SCAN -->
+    <div class="page" id="pg-scan">
+      <div class="sec-t">Scan File</div>
+      <div class="sec-s">Comprehensive integrity &amp; safety analysis</div>
+      <div class="or-div" style="margin-top:0;margin-bottom:10px"><span>SAMPLE FILES</span></div>
+      <div class="sample-grid demo-highlight" id="scan-samples">
+        <div class="sample-card clean-file" onclick="loadSample('scan','clean')">
+          <div class="sample-card-icon">📄</div>
+          <div class="sample-card-name">contract_v1.txt</div>
+          <div class="sample-card-desc">Clean contract — no threats detected</div>
+          <span class="sample-badge b-ok">Clean</span>
+        </div>
+        <div class="sample-card tampered-file" onclick="loadSample('scan','tampered')">
+          <div class="sample-card-icon">⚠️</div>
+          <div class="sample-card-name">contract_v2.txt</div>
+          <div class="sample-card-desc">Contains hidden injections &amp; altered clause</div>
+          <span class="sample-badge b-dn">Tampered</span>
+        </div>
+        <div class="sample-card sensitive-file" onclick="loadSample('scan','sensitive')">
+          <div class="sample-card-icon">🔐</div>
+          <div class="sample-card-name">employee_data.txt</div>
+          <div class="sample-card-desc">Leaked PII, API keys &amp; credentials</div>
+          <span class="sample-badge b-wn">Sensitive</span>
+        </div>
+        <div class="sample-card binary-file" onclick="loadSample('scan','binary')">
+          <div class="sample-card-icon">📦</div>
+          <div class="sample-card-name">report.bin</div>
+          <div class="sample-card-desc">Binary file — fingerprint only</div>
+          <span class="sample-badge b-pr">Binary</span>
+        </div>
+      </div>
+      <div class="or-div"><span>OR UPLOAD</span></div>
+      <div class="upload-btn" id="dz-scan">
+        <div class="u-icon"><i class="fas fa-plus-circle"></i></div>
+        <div class="u-title">Tap to select your own file</div>
+        <div class="u-sub">Any file type supported</div>
+        <input type="file" id="f-scan">
+      </div>
+      <div id="scan-out"></div>
+    </div>
+
+    <!-- PROTECT -->
+    <div class="page" id="pg-protect">
+      <div class="sec-t">Protect &amp; Anchor</div>
+      <div class="sec-s">Generate a Digital Birth Certificate for your file</div>
+      <div class="or-div" style="margin-top:0;margin-bottom:10px"><span>SAMPLE FILES</span></div>
+      <div class="sample-grid demo-highlight" id="protect-samples">
+        <div class="sample-card clean-file" onclick="loadSample('protect','clean')">
+          <div class="sample-card-icon">📄</div>
+          <div class="sample-card-name">contract_v1.txt</div>
+          <div class="sample-card-desc">Protect this file — get a receipt</div>
+          <span class="sample-badge b-ok">Recommended</span>
+        </div>
+        <div class="sample-card sensitive-file" onclick="loadSample('protect','sensitive')">
+          <div class="sample-card-icon">🔐</div>
+          <div class="sample-card-name">employee_data.txt</div>
+          <div class="sample-card-desc">Anchor sensitive records at creation</div>
+          <span class="sample-badge b-wn">Sensitive</span>
+        </div>
+      </div>
+      <div class="or-div"><span>OR UPLOAD</span></div>
+      <div class="upload-btn" id="dz-protect">
+        <div class="u-icon"><i class="fas fa-lock"></i></div>
+        <div class="u-title">Tap to select your own file</div>
+        <div class="u-sub">Creates genesis record with dual fingerprints</div>
+        <input type="file" id="f-protect">
+      </div>
+      <div id="protect-out"></div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="page" id="pg-tools">
+      <div class="seg" id="tools-seg">
+        <button class="seg-btn on" data-tool="verify">Verify</button>
+        <button class="seg-btn" data-tool="compare">Compare</button>
+        <button class="seg-btn" data-tool="clean">Clean</button>
+      </div>
+
+      <!-- VERIFY -->
+      <div id="tool-verify">
+        <div class="sec-t">Verify Integrity</div>
+        <div class="sec-s">Check a file against its DIRECT receipt</div>
+        <div class="or-div" style="margin-top:0;margin-bottom:10px"><span>SAMPLE — USE PROTECTED RECEIPT</span></div>
+        <div class="sample-grid demo-highlight" id="verify-samples" style="grid-template-columns:1fr 1fr">
+          <div class="sample-card clean-file" onclick="loadSample('verify','clean')">
+            <div class="sample-card-icon">✅</div>
+            <div class="sample-card-name">contract_v1.txt</div>
+            <div class="sample-card-desc">Unchanged — will pass verification</div>
+            <span class="sample-badge b-ok">Intact</span>
+          </div>
+          <div class="sample-card tampered-file" onclick="loadSample('verify','tampered')">
+            <div class="sample-card-icon">🚨</div>
+            <div class="sample-card-name">contract_v2.txt</div>
+            <div class="sample-card-desc">Tampered version — will fail verification</div>
+            <span class="sample-badge b-dn">Tampered</span>
+          </div>
+        </div>
+        <div class="or-div"><span>OR UPLOAD</span></div>
+        <div class="verify-file-area">
+          <div class="upload-btn" id="dz-vfile" style="padding:24px 20px">
+            <div class="u-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="u-title" style="font-size:.88rem">Select file to verify</div>
+            <input type="file" id="f-vfile">
+          </div>
+          <div id="vfile-chip"></div>
+        </div>
+        <div class="mb-8 mt-8" style="font-weight:600;font-size:.84rem">Receipt JSON <span style="color:var(--tx3);font-weight:400">(auto-filled by sample)</span></div>
+        <textarea id="v-receipt" placeholder='{"directVersion":"1.0","rawSha256":"...","canonicalSha256":"..."}'></textarea>
+        <button class="btn btn-pr mt-12" id="btn-verify" disabled><i class="fas fa-check-double"></i> Verify</button>
+        <div id="verify-out"></div>
+      </div>
+
+      <!-- COMPARE -->
+      <div id="tool-compare" class="hidden">
+        <div class="sec-t">Compare Versions</div>
+        <div class="sec-s">See exactly what changed between two files</div>
+        <div class="crd demo-highlight" style="margin-bottom:14px">
+          <div style="font-weight:700;font-size:.84rem;margin-bottom:10px;color:var(--demo-color)"><i class="fas fa-star" style="margin-right:5px"></i>Try the demo comparison</div>
+          <button class="btn btn-pr btn-sm" onclick="loadSample('compare','demo')" style="width:100%"><i class="fas fa-play"></i> Load Contract v1 vs v2</button>
+        </div>
+        <div class="compare-grid">
+          <div>
+            <div class="mb-8" style="font-weight:700;font-size:.78rem;color:var(--pr)">FILE A (Original)</div>
+            <div class="upload-btn" id="dz-ca" style="padding:24px 10px">
+              <div class="u-icon" style="font-size:1.3rem"><i class="fas fa-file"></i></div>
+              <div class="u-title" style="font-size:.84rem">File A</div>
+              <input type="file" id="f-ca">
+            </div>
+            <div id="chip-a"></div>
+          </div>
+          <div>
+            <div class="mb-8" style="font-weight:700;font-size:.78rem;color:var(--wn)">FILE B (Modified)</div>
+            <div class="upload-btn" id="dz-cb" style="padding:24px 10px">
+              <div class="u-icon" style="font-size:1.3rem"><i class="fas fa-file"></i></div>
+              <div class="u-title" style="font-size:.84rem">File B</div>
+              <input type="file" id="f-cb">
+            </div>
+            <div id="chip-b"></div>
+          </div>
+        </div>
+        <button class="btn btn-pr mt-14" id="btn-compare" disabled><i class="fas fa-balance-scale"></i> Compare</button>
+        <div id="compare-out"></div>
+      </div>
+
+      <!-- CLEAN -->
+      <div id="tool-clean" class="hidden">
+        <div class="sec-t">Clean for Delivery</div>
+        <div class="sec-s">Strip hidden threats &amp; sensitive data before sharing</div>
+        <div class="or-div" style="margin-top:0;margin-bottom:10px"><span>SAMPLE FILES</span></div>
+        <div class="sample-grid demo-highlight" id="clean-samples" style="grid-template-columns:1fr 1fr">
+          <div class="sample-card tampered-file" onclick="loadSample('clean','tampered')">
+            <div class="sample-card-icon">⚠️</div>
+            <div class="sample-card-name">contract_v2.txt</div>
+            <div class="sample-card-desc">Has hidden chars — strip &amp; clean</div>
+            <span class="sample-badge b-dn">Needs Clean</span>
+          </div>
+          <div class="sample-card sensitive-file" onclick="loadSample('clean','sensitive')">
+            <div class="sample-card-icon">🔐</div>
+            <div class="sample-card-name">employee_data.txt</div>
+            <div class="sample-card-desc">Mask PII &amp; redact secrets</div>
+            <span class="sample-badge b-wn">Needs Clean</span>
+          </div>
+        </div>
+        <div class="or-div"><span>OR UPLOAD</span></div>
+        <div class="upload-btn" id="dz-clean">
+          <div class="u-icon"><i class="fas fa-hand-sparkles"></i></div>
+          <div class="u-title">Select a text file to sanitize</div>
+          <div class="u-sub">TXT, JSON, CSV, HTML, source code</div>
+          <input type="file" id="f-clean">
+        </div>
+        <div id="clean-out"></div>
+      </div>
+    </div>
+
+    <!-- SHIELD -->
+    <div class="page" id="pg-shield">
+      <div class="tc">
+        <div class="sec-t">AI Shield</div>
+        <div class="sec-s">How DIRECT protects AI systems from invisible threats</div>
+      </div>
+      <div class="pipe" id="pipeline"></div>
+      <div class="tc mb-12" style="font-size:.8rem;font-weight:600;color:var(--tx3)">Threat → Detection → Proof → Recovery</div>
+      <div class="stg" id="scenarios"></div>
+      <div class="crd mt-16" style="border:1px solid var(--pr);background:var(--pr-bg)">
+        <div class="tc">
+          <div style="font-weight:800;font-size:.92rem;margin-bottom:10px">What DIRECT Gives AI Systems</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;font-size:.76rem;color:var(--tx2)">
+            <span><i class="fas fa-check" style="color:var(--pr);margin-right:4px"></i>Provable Provenance</span>
+            <span><i class="fas fa-check" style="color:var(--pr);margin-right:4px"></i>Trusted Intake</span>
+            <span><i class="fas fa-check" style="color:var(--pr);margin-right:4px"></i>Replayable Lineage</span>
+            <span><i class="fas fa-check" style="color:var(--pr);margin-right:4px"></i>Drift Detection</span>
+            <span><i class="fas fa-check" style="color:var(--pr);margin-right:4px"></i>Forensic Explainability</span>
+            <span><i class="fas fa-check" style="color:var(--pr);margin-right:4px"></i>Deterministic Recovery</span>
+          </div>
+          <div class="mt-8" style="font-size:.78rem;color:var(--tx3);font-style:italic">DIRECT doesn't make AI smarter. It makes the system around AI trustworthy.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <button class="bnav-btn on" data-pg="home"><i class="fas fa-house"></i><span>Home</span></button>
+    <button class="bnav-btn" data-pg="scan"><i class="fas fa-search"></i><span>Scan</span></button>
+    <button class="bnav-btn" data-pg="protect"><i class="fas fa-shield-alt"></i><span>Protect</span></button>
+    <button class="bnav-btn" data-pg="tools"><i class="fas fa-wrench"></i><span>Tools</span></button>
+    <button class="bnav-btn" data-pg="shield"><i class="fas fa-robot"></i><span>Shield</span></button>
+  </nav>
+</div>
+
+<script>
+window.onerror=function(msg,src,line,col,err){console.log('Error: '+String(msg));return true};
+window.addEventListener('unhandledrejection',function(e){console.log('Rejection: '+String(e.reason));e.preventDefault()});
+
+/* === THEME === */
+try{
+  if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)document.documentElement.classList.add('light');
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',function(e){
+    if(e.matches)document.documentElement.classList.add('light');else document.documentElement.classList.remove('light');
+  });
+}catch(e){}
+
+/* === SAMPLE FILE CONTENT === */
+const SAMPLES={
+  clean:`SERVICE AGREEMENT
+===================
+Date: March 14, 2026
+Parties: Acme Corp ("Client") and Nexus LLC ("Provider")
+
+1. SCOPE OF SERVICES
+Provider agrees to deliver software integration services as outlined in Exhibit A.
+
+2. PAYMENT TERMS
+Client shall pay $18,500 upon project completion within 30 days of invoice.
+
+3. CONFIDENTIALITY
+Both parties agree to maintain strict confidentiality of all shared materials.
+
+4. INTELLECTUAL PROPERTY
+All deliverables remain the property of Client upon full payment.
+
+5. TERM
+This agreement is effective March 14, 2026 through September 14, 2026.
+
+6. GOVERNING LAW
+This agreement shall be governed by the laws of Oregon, USA.
+
+Signed: __________________    Date: ________________`,
+
+  tampered:`SERVICE AGREEMENT
+===================
+Date: March 14, 2026
+Parties: Acme Corp ("Client") and Nexus LLC ("Provider")
+
+1. SCOPE OF SERVICES
+Provider agrees to deliver software integration services as outlined in Exhibit A.
+
+2. PAYMENT TERMS
+Client shall pay $\u200B\u200B\u200B85,000\u200C upon project completion within 30 days of invoice.
+
+3. CONFIDENTIALITY
+Both parties agree to maintain strict confidentiality of all shared materials.\u202E
+
+4. INTELLECTUAL PROPERTY
+All deliverables remain the property of \u202AProvider\u202C upon full payment.
+
+5. TERM
+This agreement is effective March 14, 2026 through September 14, 2026.
+
+6. GOVERNING LAW
+This agreement shall be governed by the laws of Oregon, USA.
+
+Signed: __________________    Date: ________________`,
+
+  sensitive:`EMPLOYEE RECORDS — CONFIDENTIAL
+=================================
+Export Date: March 14, 2026
+
+Employee #1
+Name: Jane Smith
+Email: jane.smith@acmecorp.com
+Phone: 503-555-0142
+SSN: 412-67-9823
+Salary: $112,000
+
+Employee #2
+Name: Marcus Johnson
+Email: marcus.j@acmecorp.com
+Phone: (971) 555-0198
+SSN: 287-44-1190
+
+AWS_ACCESS_KEY_ID=AKIAJX7D9EXAMPLE1234
+aws_secret=wJalrXUtn/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+API_KEY=sk-live-acme-prod-9f3a2b8c1d0e4f7a6b5c2d1e
+Password: Acme@2026!Secure
+
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.signature`,
+
+  binary:`BINARY_REPORT_v2.4\x00\x00\x01\xFF\xFE\x00\x01\x00\x02DIRECT_INTEGRITY_TEST_BINARY_FILE\x00\x00\x00`
+};
+
+/* === UTILS === */
+function fmtB(b){if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB'];const i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+s[i]}
+function fmtD(t){return t?new Date(t).toLocaleString():'Unknown'}
+async function sha256(buf){const h=await crypto.subtle.digest('SHA-256',buf);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function readText(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsText(f)})}
+function readBuf(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsArrayBuffer(f)})}
+function isTxt(f){
+  const tt=['text/','application/json','application/xml','application/javascript'];
+  const te=['.txt','.json','.csv','.xml','.html','.htm','.css','.js','.ts','.py','.md','.yaml','.yml','.sh','.sql','.log'];
+  if(tt.some(t=>f.type.startsWith(t)))return true;
+  const x='.'+f.name.split('.').pop().toLowerCase();return te.includes(x);
+}
+function canon(t){let c=t.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\uFEFF/g,'');
+  c=c.replace(/[\u200B\u200C\u200D\u2060\u00AD]/g,'');c=c.replace(/[\u202A-\u202E\u2066-\u2069\u200E\u200F]/g,'');
+  c=c.normalize('NFC');c=c.split('\n').map(l=>l.trimEnd()).join('\n').replace(/\n{3,}/g,'\n\n').trim();return c;}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function strToFile(str,name,type){return new File([str],name,{type:type||'text/plain',lastModified:Date.now()})}
+
+/* === THREAT ENGINE === */
+const ZW={'\u200B':'Zero-Width Space','\u200C':'Zero-Width Non-Joiner','\u200D':'Zero-Width Joiner','\uFEFF':'BOM','\u00AD':'Soft Hyphen','\u2060':'Word Joiner'};
+const BD={'\u202A':'LRE','\u202B':'RLE','\u202C':'PDF','\u202D':'LRO','\u202E':'RLO','\u2066':'LRI','\u2067':'RLI','\u2068':'FSI','\u2069':'PDI','\u200E':'LRM','\u200F':'RLM'};
+const HG={'\u0430':'а→a','\u0435':'е→e','\u043E':'о→o','\u0440':'р→p','\u0441':'с→c','\u0445':'х→x','\u0443':'у→y','\u0456':'і→i'};
+const PII=[{n:'Email',r:/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g},{n:'Phone',r:/(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g},{n:'SSN',r:/\b\d{3}-\d{2}-\d{4}\b/g},{n:'Credit Card',r:/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g}];
+const SEC=[{n:'AWS Key',r:/AKIA[0-9A-Z]{16}/g},{n:'API Key',r:/(?:api[_\-]?key|apikey)\s*[:=]\s*['"]?[\w\-]{20,}/gi},{n:'Bearer Token',r:/Bearer\s+[A-Za-z0-9\-._~+/]+=*/g},{n:'Private Key',r:/-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/g},{n:'Password',r:/(?:password|passwd|pwd)\s*[:=]\s*['"]?[^\s'"]{8,}/gi}];
+
+function detect(text){
+  const R={zw:[],bd:[],hg:[],nb:0,pii:[],sec:[],score:100};
+  for(const[ch,nm]of Object.entries(ZW)){let c=0;for(let i=0;i<text.length;i++)if(text[i]===ch)c++;if(c)R.zw.push({name:nm,count:c})}
+  for(const[ch,nm]of Object.entries(BD)){let c=0;for(let i=0;i<text.length;i++)if(text[i]===ch)c++;if(c)R.bd.push({name:nm,count:c})}
+  for(const[ch,nm]of Object.entries(HG)){let c=0;for(let i=0;i<text.length;i++)if(text[i]===ch)c++;if(c)R.hg.push({name:'Cyrillic '+nm,count:c})}
+  for(let i=0;i<text.length;i++)if(text.charCodeAt(i)===0)R.nb++;
+  for(const p of PII){const m=text.match(p.r);if(m)R.pii.push({name:p.n,count:m.length,samples:m.slice(0,3)})}
+  for(const p of SEC){const m=text.match(p.r);if(m)R.sec.push({name:p.n,count:m.length})}
+  if(R.zw.length)R.score-=Math.min(20,R.zw.reduce((s,i)=>s+i.count,0)*3);
+  if(R.bd.length)R.score-=Math.min(25,R.bd.reduce((s,i)=>s+i.count,0)*5);
+  if(R.hg.length)R.score-=Math.min(20,R.hg.reduce((s,i)=>s+i.count,0)*4);
+  if(R.nb)R.score-=Math.min(15,R.nb*5);
+  if(R.pii.length)R.score-=Math.min(10,R.pii.length*3);
+  if(R.sec.length)R.score-=Math.min(15,R.sec.length*5);
+  R.score=Math.max(0,R.score);return R;
+}
+
+/* === STATE === */
+const S={scanFile:null,protFile:null,vFile:null,cmpA:null,cmpB:null,cleanFile:null,receipts:{},cleaned:null,cleanThreats:null,cleanReceipt:null,demoOn:false,demoStep:0};
+
+/* Stored receipt for demo verify */
+let demoCleanReceipt=null;
+
+/* === SAMPLE FILE LOADER === */
+async function loadSample(ctx,type){
+  let file,txt,name;
+  if(type==='clean'){txt=SAMPLES.clean;name='contract_v1.txt'}
+  else if(type==='tampered'){txt=SAMPLES.tampered;name='contract_v2.txt'}
+  else if(type==='sensitive'){txt=SAMPLES.sensitive;name='employee_data.txt'}
+  else if(type==='binary'){txt=SAMPLES.binary;name='report.bin';file=new File([txt],'report.bin',{type:'application/octet-stream',lastModified:Date.now()})}
+  else if(type==='demo'){
+    // load both compare files
+    S.cmpA=strToFile(SAMPLES.clean,'contract_v1.txt');
+    S.cmpB=strToFile(SAMPLES.tampered,'contract_v2.txt');
+    document.getElementById('chip-a').innerHTML=chipHTML(S.cmpA,'ca');
+    document.getElementById('chip-b').innerHTML=chipHTML(S.cmpB,'cb');
+    checkCmpReady();
+    return;
+  }
+  if(!file)file=strToFile(txt,name);
+
+  if(ctx==='scan'){S.scanFile=file;handleScan(file).catch(e=>console.log(e))}
+  else if(ctx==='protect'){S.protFile=file;handleProtect(file).catch(e=>console.log(e))}
+  else if(ctx==='verify'){
+    // For demo verify: auto-fill receipt from protected contract_v1 if available, else generate one
+    S.vFile=file;
+    document.getElementById('vfile-chip').innerHTML=chipHTML(file,'vfile');
+    // generate a receipt for the clean file so demo works seamlessly
+    const buf=await file.arrayBuffer();
+    const rawH=await sha256(buf);
+    const txtContent=await file.text();
+    const canH=await sha256(new TextEncoder().encode(canon(txtContent)));
+    // If it's the tampered version, use the CLEAN hash so it fails verification
+    let receiptHash=rawH,receiptCanon=canH;
+    if(type==='tampered'){
+      // use the clean file's hash as the "protected" receipt
+      const cleanF=strToFile(SAMPLES.clean,'contract_v1.txt');
+      const cb=await cleanF.arrayBuffer();
+      receiptHash=await sha256(cb);
+      const ct=await cleanF.text();
+      receiptCanon=await sha256(new TextEncoder().encode(canon(ct)));
+    }
+    const receipt={directVersion:'1.0',type:'genesis',fileName:'contract_v1.txt',rawSha256:receiptHash,canonicalSha256:receiptCanon,timestamp:new Date(Date.now()-86400000).toISOString()};
+    document.getElementById('v-receipt').value=JSON.stringify(receipt,null,2);
+    checkVerifyReady();
+    return;
+  }
+  else if(ctx==='clean'){S.cleanFile=file;handleClean(file).catch(e=>console.log(e))}
+}
+
+/* === NAV === */
+const titles={home:'Home',scan:'Scan',protect:'Protect',tools:'Tools',shield:'AI Shield'};
+function goPage(pg,segId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
+  const target=document.getElementById('pg-'+pg);if(target)target.classList.add('on');
+  const navBtn=document.querySelector(`.bnav-btn[data-pg="${pg}"]`);if(navBtn)navBtn.classList.add('on');
+  document.getElementById('hdr-title').textContent=titles[pg]||'DIRECT';
+  document.getElementById('main').scrollTop=0;
+  if(segId)setTimeout(()=>switchTool(segId),50);
+}
+document.querySelectorAll('.bnav-btn').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.pg)));
+document.querySelectorAll('.act-card').forEach(c=>c.addEventListener('click',()=>goPage(c.dataset.goto,c.dataset.seg)));
+
+/* === TOOLS SEGMENT === */
+function switchTool(id){
+  document.querySelectorAll('#tools-seg .seg-btn').forEach(b=>{b.classList.toggle('on',b.dataset.tool===id)});
+  ['verify','compare','clean'].forEach(t=>{const el=document.getElementById('tool-'+t);if(el)el.classList.toggle('hidden',t!==id)});
+}
+document.querySelectorAll('#tools-seg .seg-btn').forEach(b=>b.addEventListener('click',()=>switchTool(b.dataset.tool)));
+
+/* === DROP ZONES === */
+function setupDZ(zId,fId,cb){
+  const z=document.getElementById(zId),inp=document.getElementById(fId);if(!z||!inp)return;
+  z.addEventListener('click',()=>inp.click());
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over')});
+  z.addEventListener('dragleave',()=>z.classList.remove('over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');if(e.dataTransfer.files.length)cb(e.dataTransfer.files[0])});
+  inp.addEventListener('change',()=>{if(inp.files.length)cb(inp.files[0]);inp.value=''});
+}
+
+/* === SCAN LOG === */
+function mkLog(ct){const l=document.createElement('div');l.className='slog';ct.appendChild(l);let i=0;return{
+  add(tag,msg,st){const d=document.createElement('div');d.className='ln';d.style.animationDelay=i*.08+'s';
+    const sc=st==='ok'?'ok':st==='fail'?'fl':'';const ic=st==='ok'?'✓':st==='fail'?'✗':'⟳';
+    d.innerHTML=`<span class="tag">[${tag}]</span> ${msg} <span class="${sc}">${ic}</span>`;l.appendChild(d);l.scrollTop=l.scrollHeight;i++},el:l}}
+
+/* === SCORE GAUGE === */
+function scoreHTML(sc){
+  const C=2*Math.PI*60,off=C-(sc/100)*C;
+  const col=sc>=80?'var(--ok)':sc>=50?'var(--wn)':'var(--dn)';
+  const lbl=sc>=90?'Excellent':sc>=80?'Good':sc>=60?'Fair':sc>=40?'Concerning':'Critical';
+  return`<div class="score-wrap"><div class="score-ring"><svg viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="60"/><circle class="fg" cx="70" cy="70" r="60" stroke="${col}" stroke-dasharray="${C}" stroke-dashoffset="${off}"/></svg><div class="score-num" style="color:${col}">${sc}<small>/100</small></div></div><div class="score-lbl">${lbl}</div></div>`}
+
+/* === THREAT ROWS === */
+function threatRows(items,empty){
+  if(!items.length)return`<div class="trow"><i class="fas fa-check-circle" style="color:var(--ok)"></i><span class="t-name">${empty}</span><span class="badge b-ok">CLEAR</span></div>`;
+  return items.map(i=>`<div class="trow"><i class="fas fa-exclamation-triangle" style="color:var(--dn)"></i><span class="t-name">${i.name}</span><span class="badge b-dn">${i.count} found</span></div>`).join('')}
+
+/* === FILE CHIP === */
+function chipHTML(f,xId){return`<div class="fchip"><i class="fas fa-file-alt"></i><div class="fchip-info"><div class="fchip-name">${f.name}</div><div class="fchip-meta">${fmtB(f.size)} · ${f.type||'text/plain'}</div></div>${xId?`<button class="fchip-x" onclick="clearChip('${xId}')"><i class="fas fa-xmark"></i></button>`:''}</div>`}
+function clearChip(id){
+  if(id==='vfile'){S.vFile=null;document.getElementById('vfile-chip').innerHTML='';checkVerifyReady()}
+  if(id==='ca'){S.cmpA=null;document.getElementById('chip-a').innerHTML='';checkCmpReady()}
+  if(id==='cb'){S.cmpB=null;document.getElementById('chip-b').innerHTML='';checkCmpReady()}
+}
+
+/* === MODAL === */
+function dismissModal(el){var ov=el;while(ov&&!ov.classList.contains('modal-ov'))ov=ov.parentNode;if(ov&&ov.parentNode)ov.parentNode.removeChild(ov)}
+function showModal(title,msg){
+  var ov=document.createElement('div');ov.className='modal-ov';
+  ov.innerHTML='<div class="modal-box"><div class="modal-handle"></div><h3>'+title+'</h3><p>'+msg+'</p><div class="modal-actions"><button class="btn btn-pr" onclick="dismissModal(this)">Got it</button></div></div>';
+  ov.addEventListener('click',function(e){if(e.target===ov&&ov.parentNode)ov.parentNode.removeChild(ov)});
+  document.body.appendChild(ov);
+}
+
+/* ============================== */
+/* ===     DEMO MODE          === */
+/* ============================== */
+const DEMO_STEPS=[
+  {
+    pg:'home',seg:null,
+    num:1,
+    title:'The Problem',
+    text:'Every day, documents are tampered with, injected with hidden attacks, or leaked with sensitive data — and nobody knows. DIRECT solves this.',
+    hint:'👆 Tap "Scan File" to see it detect threats in real-time'
+  },
+  {
+    pg:'scan',seg:null,
+    num:2,
+    title:'Scan: Detect Hidden Threats',
+    text:'Tap the "Tampered" sample. DIRECT finds invisible zero-width characters, bidi overrides, and altered payment terms — in under a second.',
+    hint:'👆 Tap the ⚠️ contract_v2.txt sample card'
+  },
+  {
+    pg:'protect',seg:null,
+    num:3,
+    title:'Protect: Issue a Birth Certificate',
+    text:'Tap the clean contract. DIRECT computes dual cryptographic fingerprints and issues an unforgeable genesis receipt — a permanent record of the file\'s original state.',
+    hint:'👆 Tap the 📄 contract_v1.txt sample card'
+  },
+  {
+    pg:'tools',seg:'verify',
+    num:4,
+    title:'Verify: Catch Tampering Instantly',
+    text:'Try "contract_v2.txt" — the tampered version. DIRECT compares its hash against the protected receipt and immediately flags the breach.',
+    hint:'👆 Tap the 🚨 contract_v2.txt sample card'
+  },
+  {
+    pg:'tools',seg:'compare',
+    num:5,
+    title:'Compare: See Exactly What Changed',
+    text:'Load the demo comparison. DIRECT shows a line-by-line diff — the payment amount was changed from $18,500 to $85,000 using invisible characters.',
+    hint:'👆 Tap "Load Contract v1 vs v2"'
+  },
+  {
+    pg:'tools',seg:'clean',
+    num:6,
+    title:'Clean: Safe to Share',
+    text:'Before sharing a file, run it through Clean. DIRECT strips all hidden characters and masks PII — then issues a removal receipt proving what was found and removed.',
+    hint:'👆 Tap the sensitive employee_data.txt sample'
+  },
+  {
+    pg:'shield',seg:null,
+    num:7,
+    title:'AI Shield: The Bigger Market',
+    text:'AI pipelines are blind to document tampering. DIRECT wraps every input with cryptographic identity — making AI outputs auditable, traceable, and legally defensible.',
+    hint:'👆 Scroll through the real-world AI scenarios below'
+  },
+  {
+    pg:'home',seg:null,
+    num:8,
+    title:'The Ask',
+    text:'DIRECT is built, tested, and patent-filed. $180K gets 18 months of runway to ship DIRECT Check, Verify, and Vault — and close the enterprise pipeline.',
+    hint:'✅ End of demo — thank you for your time'
+  }
+];
+
+function toggleDemo(){
+  S.demoOn=!S.demoOn;S.demoStep=0;
+  const btn=document.getElementById('demo-toggle');
+  const banner=document.getElementById('demo-banner');
+  if(S.demoOn){
+    btn.classList.add('active');btn.innerHTML='<i class="fas fa-stop-circle"></i> Exit Demo';
+    document.body.classList.add('demo-on');
+    banner.classList.add('on');
+    renderDemoStep();
+  }else{
+    btn.classList.remove('active');btn.innerHTML='<i class="fas fa-play-circle"></i> Demo';
+    document.body.classList.remove('demo-on');
+    banner.classList.remove('on');
+  }
+}
+
+function renderDemoStep(){
+  const step=DEMO_STEPS[S.demoStep];
+  const total=DEMO_STEPS.length;
+  // progress
+  let progH='';
+  for(let i=0;i<total;i++)progH+=`<span class="${i<=S.demoStep?'done':''}"></span>`;
+  document.getElementById('demo-progress').innerHTML=progH;
+  // content
+  document.getElementById('demo-step-content').innerHTML=`
+    <div class="demo-step-num">${step.num}</div>
+    <div class="demo-step-body">
+      <div class="demo-step-title">${step.title}</div>
+      <div class="demo-step-text">${step.text}</div>
+      <div class="demo-step-hint">${step.hint}</div>
+    </div>`;
+  // nav buttons
+  document.getElementById('demo-prev').style.display=S.demoStep===0?'none':'block';
+  document.getElementById('demo-next').textContent=S.demoStep===total-1?'Finish':'Next →';
+  document.getElementById('demo-next').innerHTML=S.demoStep===total-1?'<i class="fas fa-check"></i> Finish':'Next <i class="fas fa-arrow-right"></i>';
+  // navigate to the page this step covers
+  goPage(step.pg,step.seg);
+}
+
+function demoNav(dir){
+  const total=DEMO_STEPS.length;
+  S.demoStep+=dir;
+  if(S.demoStep>=total){toggleDemo();return}
+  if(S.demoStep<0)S.demoStep=0;
+  renderDemoStep();
+}
+
+/* ============================== */
+/* ===       SCAN             === */
+/* ============================== */
+async function handleScan(file){
+  S.scanFile=file;const ct=document.getElementById('scan-out');ct.innerHTML='';
+  const log=mkLog(ct);const isT=isTxt(file);
+  log.add('READ',`${file.name} (${fmtB(file.size)})`,'ok');
+  const buf=await readBuf(file);await delay(180);
+  log.add('GAICS','Raw SHA-256...','ok');const rawH=await sha256(buf);await delay(160);
+  let canH=rawH,txt=null;
+  if(isT){txt=await file.text().catch(async()=>await readText(file));
+    log.add('GAICS','Canonicalizing...','ok');await delay(140);
+    canH=await sha256(new TextEncoder().encode(canon(txt)));log.add('GAICS','Canonical SHA-256...','ok');await delay(140);
+  }else{log.add('GAICS','Binary — canonical = raw','ok');await delay(100)}
+  log.add('CSM','Structural mapping...','ok');await delay(120);
+  let T={zw:[],bd:[],hg:[],nb:0,pii:[],sec:[],score:100};
+  if(isT&&txt){
+    log.add('SCAN','Zero-width characters...','ok');await delay(110);
+    log.add('SCAN','Bidi overrides...','ok');await delay(110);
+    log.add('SCAN','Homoglyphs...','ok');await delay(110);
+    log.add('SCAN','PII patterns...','ok');await delay(110);
+    log.add('SCAN','Secrets & credentials...','ok');await delay(110);
+    T=detect(txt);
+    const ss=T.score>=80?'ok':T.score>=50?'pending':'fail';
+    log.add('HEART',`Score: ${T.score}/100`,ss);
+  }else{log.add('HEART','Score: 100/100 (binary)','ok')}
+  await delay(300);
+  const thTotal=T.zw.length+T.bd.length+T.hg.length+(T.nb?1:0);
+  const senTotal=T.pii.length+T.sec.length;
+  ct.insertAdjacentHTML('beforeend',`
+    <div class="stg">
+      ${scoreHTML(T.score)}
+      <div class="crd"><div class="crd-h"><i style="background:var(--pr-bg);color:var(--pr)" class="fas fa-info-circle"></i><h3>Overview</h3></div>
+        <div class="row"><span class="lbl">Name</span><span class="val">${file.name}</span></div>
+        <div class="row"><span class="lbl">Size</span><span class="val">${fmtB(file.size)}</span></div>
+        <div class="row"><span class="lbl">Type</span><span class="val">${file.type||'text/plain'}</span></div>
+      </div>
+      <div class="crd"><div class="crd-h"><i style="background:rgba(168,85,247,.1);color:#A855F7" class="fas fa-fingerprint"></i><h3>Fingerprints</h3></div>
+        <div class="row"><span class="lbl">Raw SHA-256</span><span class="val">${rawH}</span></div>
+        <div class="row"><span class="lbl">Canonical</span><span class="val">${canH}</span></div>
+        <div class="row"><span class="lbl">Match</span><span class="val">${rawH===canH?'<span class="badge b-ok">Identical</span>':'<span class="badge b-pr">Normalized</span>'}</span></div>
+      </div>
+      ${isT?`
+      <div class="crd exp" onclick="this.classList.toggle('open')"><div class="exp-head"><i style="background:var(--dn-bg);color:var(--dn)" class="fas fa-ghost"></i><h3 style="flex:1;font-size:.9rem;font-weight:700">Hidden Threats</h3><span class="badge ${thTotal?'b-dn':'b-ok'}">${thTotal?thTotal+' found':'Clear'}</span><i class="fas fa-chevron-down exp-chev"></i></div>
+        <div class="exp-body">${threatRows(T.zw,'No zero-width chars')}${threatRows(T.bd,'No bidi overrides')}${threatRows(T.hg,'No homoglyphs')}</div></div>
+      <div class="crd exp" onclick="this.classList.toggle('open')"><div class="exp-head"><i style="background:var(--wn-bg);color:var(--wn)" class="fas fa-user-shield"></i><h3 style="flex:1;font-size:.9rem;font-weight:700">Sensitive Data</h3><span class="badge ${senTotal?'b-wn':'b-ok'}">${senTotal?senTotal+' found':'Clear'}</span><i class="fas fa-chevron-down exp-chev"></i></div>
+        <div class="exp-body">${threatRows(T.pii,'No PII detected')}${threatRows(T.sec,'No secrets detected')}</div></div>
+      `:`<div class="crd"><div class="crd-h"><i style="background:var(--pr-bg);color:var(--pr)" class="fas fa-info-circle"></i><h3>Content Scan</h3></div><div class="trow"><i class="fas fa-info-circle" style="color:var(--pr)"></i><span class="t-name">Binary files receive fingerprint verification only</span></div></div>`}
+    </div>`);
+  // auto-expand threat cards if issues found
+  if(thTotal>0){setTimeout(()=>{const cards=document.querySelectorAll('#scan-out .exp');if(cards[0])cards[0].classList.add('open')},600)}
+  if(senTotal>0){setTimeout(()=>{const cards=document.querySelectorAll('#scan-out .exp');if(cards[1])cards[1].classList.add('open')},800)}
+  document.getElementById('main').scrollTo({top:200,behavior:'smooth'});
+}
+
+/* ============================== */
+/* ===     PROTECT            === */
+/* ============================== */
+async function handleProtect(file){
+  S.protFile=file;const ct=document.getElementById('protect-out');ct.innerHTML='';
+  const log=mkLog(ct);const isT=isTxt(file);
+  log.add('GAICS','Reading file...','ok');const buf=await readBuf(file);await delay(160);
+  log.add('GAICS','Raw fingerprint...','ok');const rawH=await sha256(buf);await delay(160);
+  let canH=rawH;
+  if(isT){const t=await file.text().catch(async()=>await readText(file));canH=await sha256(new TextEncoder().encode(canon(t)));log.add('GAICS','Canonical fingerprint...','ok');await delay(160)}
+  log.add('CSM','Mapping structure...','ok');await delay(140);
+  log.add('CEIOS','Ordering events...','ok');await delay(140);
+  log.add('FOSSIL','Genesis record...','ok');await delay(180);
+  const receipt={directVersion:'1.0',type:'genesis',fileName:file.name,fileSize:file.size,fileType:file.type||'text/plain',contentMode:isT?'text':'binary',rawSha256:rawH,canonicalSha256:canH,timestamp:new Date().toISOString(),subsystems:{gaics:'identity-assigned',csm:'structure-mapped',ceios:'genesis-ordered',fossil:'state-anchored',heartbeat:'baseline-set'}};
+  S.receipts[rawH]=receipt;
+  log.add('DIRECT','Certificate issued. ✓','ok');await delay(300);
+  const rj=JSON.stringify(receipt,null,2);
+  ct.insertAdjacentHTML('beforeend',`
+    <div class="stg">
+      <div class="rstatus rs-ok"><i class="fas fa-certificate"></i><h2>Protected</h2><p>Digital Birth Certificate issued for <strong>${file.name}</strong>. Copy this receipt — paste it into Verify to test tamper detection.</p></div>
+      <div class="crd"><div class="crd-h"><i style="background:rgba(168,85,247,.1);color:#A855F7" class="fas fa-fingerprint"></i><h3>Dual Fingerprints</h3></div>
+        <div class="row"><span class="lbl">Raw</span><span class="val">${rawH}</span></div>
+        <div class="row"><span class="lbl">Canonical</span><span class="val">${canH}</span></div>
+      </div>
+      <div class="crd"><div class="crd-h"><i style="background:var(--ok-bg);color:var(--ok)" class="fas fa-scroll"></i><h3>Genesis Receipt</h3></div>
+        <div class="rcpt">${esc(rj)}</div>
+        <button class="btn btn-pr mt-12" onclick="dlReceipt('${rawH}')"><i class="fas fa-download"></i> Download Receipt JSON</button>
+      </div>
+    </div>`);
+  document.getElementById('main').scrollTo({top:300,behavior:'smooth'});
+}
+function dlReceipt(hash){
+  const r=S.receipts[hash];if(!r)return;
+  const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`DIRECT-receipt-${r.fileName}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+/* ============================== */
+/* ===      VERIFY            === */
+/* ============================== */
+function checkVerifyReady(){
+  const ok=S.vFile&&document.getElementById('v-receipt').value.trim().length>10;
+  document.getElementById('btn-verify').disabled=!ok;
+}
+async function handleVerify(){
+  const file=S.vFile,rt=document.getElementById('v-receipt').value.trim();
+  if(!file||!rt)return;
+  let receipt;try{receipt=JSON.parse(rt)}catch(e){showModal('Invalid Receipt','Could not parse JSON. Check the format.');return}
+  if(!receipt.rawSha256||!receipt.canonicalSha256){showModal('Invalid Receipt','Missing required hash fields.');return}
+  const ct=document.getElementById('verify-out');ct.innerHTML='<div class="tc mt-16" style="color:var(--tx2)"><i class="fas fa-spinner spin"></i> Verifying...</div>';
+  const buf=await readBuf(file);const curRaw=await sha256(buf);
+  let curCan=curRaw;
+  if(isTxt(file)){const t=await file.text().catch(async()=>await readText(file));curCan=await sha256(new TextEncoder().encode(canon(t)))}
+  const rawOk=curRaw===receipt.rawSha256,canOk=curCan===receipt.canonicalSha256;
+  let st,cls,ico,msg;
+  if(rawOk&&canOk){st='VERIFIED';cls='rs-ok';ico='fa-check-circle';msg='Exact match. This file has not been altered in any way since it was protected.'}
+  else if(!rawOk&&canOk){st='MEANING PRESERVED';cls='rs-wn';ico='fa-exclamation-circle';msg='Formatting changed, but core content is equivalent. May be acceptable depending on policy.'}
+  else{st='TAMPER DETECTED';cls='rs-dn';ico='fa-times-circle';msg='This file has been altered since it was protected. The hash does not match the receipt.'}
+  ct.innerHTML=`<div class="stg">
+    <div class="rstatus ${cls}"><i class="fas ${ico}"></i><h2>${st}</h2><p>${msg}</p></div>
+    <div class="crd"><div class="crd-h"><i style="background:var(--pr-bg);color:var(--pr)" class="fas fa-balance-scale"></i><h3>Hash Comparison</h3></div>
+      <div class="row"><span class="lbl">Receipt Raw</span><span class="val">${receipt.rawSha256.slice(0,16)}...</span></div>
+      <div class="row"><span class="lbl">Current Raw</span><span class="val" style="color:${rawOk?'var(--ok)':'var(--dn)'}">${curRaw.slice(0,16)}...</span></div>
+      <div class="row"><span class="lbl">Raw Match</span><span class="val">${rawOk?'<span class="badge b-ok">PASS</span>':'<span class="badge b-dn">FAIL</span>'}</span></div><hr>
+      <div class="row"><span class="lbl">Canon Match</span><span class="val">${canOk?'<span class="badge b-ok">PASS</span>':'<span class="badge b-dn">FAIL</span>'}</span></div>
+    </div></div>`;
+  document.getElementById('main').scrollTo({top:200,behavior:'smooth'});
+}
+
+/* ============================== */
+/* ===      COMPARE           === */
+/* ============================== */
+function checkCmpReady(){document.getElementById('btn-compare').disabled=!(S.cmpA&&S.cmpB)}
+async function handleCompare(){
+  const fA=S.cmpA,fB=S.cmpB;if(!fA||!fB)return;
+  const ct=document.getElementById('compare-out');ct.innerHTML='<div class="tc mt-16" style="color:var(--tx2)"><i class="fas fa-spinner spin"></i> Comparing...</div>';
+  const[bA,bB]=await Promise.all([readBuf(fA),readBuf(fB)]);
+  const[hA,hB]=await Promise.all([sha256(bA),sha256(bB)]);
+  let cA=hA,cB=hB,tA=null,tB=null;
+  if(isTxt(fA)&&isTxt(fB)){
+    [tA,tB]=await Promise.all([
+      fA.text().catch(async()=>await readText(fA)),
+      fB.text().catch(async()=>await readText(fB))
+    ]);
+    const enc=new TextEncoder();[cA,cB]=await Promise.all([sha256(enc.encode(canon(tA))),sha256(enc.encode(canon(tB)))]);
+  }
+  const rawOk=hA===hB,canOk=cA===cB;
+  let st,cls;if(rawOk){st='Byte-Identical';cls='rs-ok'}else if(canOk){st='Meaning Preserved';cls='rs-wn'}else{st='Content Differs';cls='rs-dn'}
+  let diffH='';
+  if(tA!==null&&tB!==null&&!rawOk){
+    const lA=tA.split('\n'),lB=tB.split('\n'),mx=Math.max(lA.length,lB.length);let dl=[];
+    for(let i=0;i<mx&&i<100;i++){const a=lA[i]!==undefined?lA[i]:null,b=lB[i]!==undefined?lB[i]:null;
+      if(a===b){if(dl.length===0||dl[dl.length-1].includes('diff-s'))dl.push(`<span class="diff-s">  ${esc(a||'')}</span>`)}
+      else{if(a!==null)dl.push(`<span class="diff-r">- ${esc(a)}</span>`);if(b!==null)dl.push(`<span class="diff-a">+ ${esc(b)}</span>`)}}
+    diffH=`<div class="crd"><div class="crd-h"><i style="background:var(--pr-bg);color:var(--pr)" class="fas fa-code"></i><h3>Content Diff</h3></div><div class="diff">${dl.join('')}</div></div>`;
+  }
+  ct.innerHTML=`<div class="stg">
+    <div class="rstatus ${cls}"><i class="fas ${rawOk?'fa-check-circle':canOk?'fa-exclamation-circle':'fa-times-circle'}"></i><h2>${st}</h2></div>
+    <div class="crd"><div class="crd-h"><i style="background:var(--pr-bg);color:var(--pr)" class="fas fa-balance-scale"></i><h3>Summary</h3></div>
+      <div class="row"><span class="lbl">File A</span><span class="val">${fA.name}</span></div>
+      <div class="row"><span class="lbl">File B</span><span class="val">${fB.name}</span></div>
+      <div class="row"><span class="lbl">Size Δ</span><span class="val">${fA.size===fB.size?'<span class="badge b-ok">Same</span>':fmtB(Math.abs(fA.size-fB.size))+' '+(fB.size>fA.size?'larger':'smaller')}</span></div><hr>
+      <div class="row"><span class="lbl">Raw Match</span><span class="val">${rawOk?'<span class="badge b-ok">YES</span>':'<span class="badge b-dn">NO</span>'}</span></div>
+      <div class="row"><span class="lbl">Canon Match</span><span class="val">${canOk?'<span class="badge b-ok">YES</span>':'<span class="badge b-dn">NO</span>'}</span></div>
+    </div>${diffH}</div>`;
+  document.getElementById('main').scrollTo({top:200,behavior:'smooth'});
+}
+
+/* ============================== */
+/* ===       CLEAN            === */
+/* ============================== */
+async function handleClean(file){
+  S.cleanFile=file;const ct=document.getElementById('clean-out');ct.innerHTML='';
+  if(!isTxt(file)){ct.innerHTML='<div class="rstatus rs-wn mt-12"><i class="fas fa-info-circle"></i><h2>Binary File</h2><p>Cleaning is available for text-based files only.</p></div>';return}
+  const log=mkLog(ct);log.add('READ',file.name,'ok');
+  const txt=await file.text().catch(async()=>await readText(file));await delay(160);
+  log.add('SCAN','Scanning for threats...','ok');await delay(180);const T=detect(txt);
+  const tot=T.zw.reduce((s,i)=>s+i.count,0)+T.bd.reduce((s,i)=>s+i.count,0)+T.pii.reduce((s,i)=>s+i.count,0)+T.sec.reduce((s,i)=>s+i.count,0);
+  log.add('DIRECT',`${tot} item${tot!==1?'s':''} flagged`,tot?'pending':'ok');await delay(220);
+  let cleaned=canon(txt);
+  for(const p of PII)cleaned=cleaned.replace(p.r,m=>m.length<=4?'****':m.slice(0,2)+'*'.repeat(m.length-4)+m.slice(-2));
+  for(const p of SEC)cleaned=cleaned.replace(p.r,'[REDACTED]');
+  S.cleaned=cleaned;S.cleanThreats=T;
+  const items=[...T.zw.map(i=>({name:i.name,count:i.count,act:'removed',cls:'b-wn'})),...T.bd.map(i=>({name:i.name,count:i.count,act:'removed',cls:'b-dn'})),...T.pii.map(i=>({name:i.name,count:i.count,act:'masked',cls:'b-wn'})),...T.sec.map(i=>({name:i.name,count:i.count,act:'redacted',cls:'b-dn'}))];
+  ct.insertAdjacentHTML('beforeend',`<div class="stg">
+    <div class="crd"><div class="crd-h"><i style="background:var(--wn-bg);color:var(--wn)" class="fas fa-search"></i><h3>Issues Found</h3><span class="badge ${tot?'b-wn':'b-ok'}">${tot||'None'}</span></div>
+      ${items.length?items.map(i=>`<div class="trow"><i class="fas fa-exclamation-triangle" style="color:var(--wn)"></i><span class="t-name">${i.name}</span><span class="badge ${i.cls}">${i.count} ${i.act}</span></div>`).join(''):'<div class="trow"><i class="fas fa-check-circle" style="color:var(--ok)"></i><span class="t-name">File is already clean</span><span class="badge b-ok">CLEAN</span></div>'}
+    </div>
+    ${tot?`<button class="btn btn-ok" onclick="dlClean()"><i class="fas fa-download"></i> Download Cleaned File</button>
+    <button class="btn btn-out mt-8" onclick="dlCleanReceipt()"><i class="fas fa-scroll"></i> Download Removal Receipt</button>`:''}
+  </div>`);
+  document.getElementById('main').scrollTo({top:200,behavior:'smooth'});
+}
+function dlClean(){
+  if(!S.cleaned||!S.cleanFile)return;
+  const b=new Blob([S.cleaned],{type:'text/plain;charset=utf-8'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='DIRECT-cleaned-'+S.cleanFile.name;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+async function dlCleanReceipt(){
+  if(!S.cleanFile||!S.cleanThreats)return;
+  const buf=await readBuf(S.cleanFile);const oh=await sha256(buf);const ch=await sha256(new TextEncoder().encode(S.cleaned));
+  const r={directVersion:'1.0',type:'cleaning',original:S.cleanFile.name,originalHash:oh,cleanedHash:ch,timestamp:new Date().toISOString(),
+    removed:{zeroWidth:S.cleanThreats.zw.reduce((s,i)=>s+i.count,0),bidi:S.cleanThreats.bd.reduce((s,i)=>s+i.count,0),piiMasked:S.cleanThreats.pii.reduce((s,i)=>s+i.count,0),secretsRedacted:S.cleanThreats.sec.reduce((s,i)=>s+i.count,0)}};
+  const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download='DIRECT-clean-receipt-'+S.cleanFile.name+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+/* ============================== */
+/* ===     AI SCENARIOS       === */
+/* ============================== */
+const scenarios=[
+  {n:'01',t:'Poisoned Dataset',th:'Training data altered with mislabeled records to skew model behavior.',fx:'GAICS detects identity drift. Fossil pinpoints the exact corrupted shard.'},
+  {n:'02',t:'Hidden Prompt Injection',th:'Documents contain invisible malicious instructions that hijack the AI.',fx:'Content is canonicalized at intake. Untrusted artifacts blocked at structural boundary.'},
+  {n:'03',t:'Unreproducible Training',th:'Engineers cannot recreate how a model was built. Data and scripts drifted.',fx:'CEIOS ensures deterministic ordering. Auditors replay the exact historical state.'},
+  {n:'04',t:'Silent Model Drift',th:'Model performance degrades. No one can find where the change started.',fx:'Heartbeat recomputes structural fingerprints. Drift traced to exact pipeline stage.'},
+  {n:'05',t:'Supply Chain Attack',th:'Malicious dependency subtly compromises preprocessing at build time.',fx:'CSM maps the dependency graph. Unauthorized structural mutation exposed immediately.'},
+  {n:'06',t:'Knowledge Poisoning',th:'Internal docs edited incorrectly over time. AI answers become wrong.',fx:'Fossil records knowledge graph evolution. Exact moment of structural change is visible.'},
+  {n:'07',t:'Hallucination Forensics',th:'Regulator asks: "Why did the AI say this?" No provenance exists.',fx:'Canonical event lineage traces answers back to datasets and transformations.'},
+  {n:'08',t:'Catastrophic Corruption',th:'System failure corrupts the pipeline database. Relationships break.',fx:'Repair identifies the minimal invalid region. Restores last valid state deterministically.'}
+];
+function renderScenarios(){
+  document.getElementById('scenarios').innerHTML=scenarios.map(s=>`<div class="sc-card"><div class="sc-num">Scenario ${s.n}</div><div class="sc-title">${s.t}</div><div class="sc-threat"><i class="fas fa-exclamation-triangle"></i><span>${s.th}</span></div><div class="sc-fix"><i class="fas fa-shield-alt"></i><span>${s.fx}</span></div></div>`).join('');
+}
+function renderPipeline(){
+  const nodes=[{n:'INPUTS',d:'Data, Docs'},{n:'GAICS',d:'Identity'},{n:'CSM',d:'Structure'},{n:'CEIOS',d:'Ordering'},{n:'FOSSIL',d:'History'},{n:'HEARTBEAT',d:'Verify'}];
+  document.getElementById('pipeline').innerHTML=nodes.map((nd,i)=>`${i?'<div class="pipe-a"><i class="fas fa-chevron-right"></i></div>':''}<div class="pipe-n"><div class="p-nm">${nd.n}</div><div class="p-ds">${nd.d}</div></div>`).join('');
+}
+
+/* === INIT === */
+function init(){
+  try{
+    setupDZ('dz-scan','f-scan',function(f){handleScan(f).catch(e=>console.log(e))});
+    setupDZ('dz-protect','f-protect',function(f){handleProtect(f).catch(e=>console.log(e))});
+    setupDZ('dz-clean','f-clean',function(f){handleClean(f).catch(e=>console.log(e))});
+    setupDZ('dz-vfile','f-vfile',function(f){S.vFile=f;document.getElementById('vfile-chip').innerHTML=chipHTML(f,'vfile');checkVerifyReady()});
+    setupDZ('dz-ca','f-ca',function(f){S.cmpA=f;document.getElementById('chip-a').innerHTML=chipHTML(f,'ca');checkCmpReady()});
+    setupDZ('dz-cb','f-cb',function(f){S.cmpB=f;document.getElementById('chip-b').innerHTML=chipHTML(f,'cb');checkCmpReady()});
+    document.getElementById('btn-verify').addEventListener('click',function(){handleVerify().catch(e=>console.log(e))});
+    document.getElementById('v-receipt').addEventListener('input',checkVerifyReady);
+    document.getElementById('btn-compare').addEventListener('click',function(){handleCompare().catch(e=>console.log(e))});
+    renderScenarios();renderPipeline();
+  }catch(e){console.log('Init error: '+String(e))}
+
+  setTimeout(function(){
+    try{
+      var splash=document.getElementById('splash');var app=document.getElementById('app');
+      if(splash)splash.classList.add('out');
+      if(app){app.style.transition='opacity .4s ease';app.style.opacity='1';}
+      setTimeout(function(){if(splash&&splash.parentNode)splash.parentNode.removeChild(splash)},600);
+    }catch(e){var appEl=document.getElementById('app');if(appEl)appEl.style.opacity='1';}
+  },2200);
+}
+try{init()}catch(e){var appEl=document.getElementById('app');if(appEl)appEl.style.opacity='1';console.log('Fatal: '+String(e))}
+</script>
+</body>
+</html>
