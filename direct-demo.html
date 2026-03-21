@@ -120,17 +120,40 @@ border:1px solid var(–bdr);border-radius:var(–r);padding:10px 12px;margin-bo
 .fc-x{width:24px;height:24px;border-radius:6px;border:none;background:var(–sf3);color:var(–tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0}
 .fc-x:active{background:var(–dn-bg);color:var(–dn)}
 
-.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .act-btn{
-display:flex;align-items:center;gap:8px;padding:10px 10px;
-border:1px solid var(–bdr);border-radius:var(–r);background:var(–sf2);
-cursor:pointer;transition:all .15s;touch-action:manipulation;
-font-family:var(–font);font-size:.78rem;font-weight:600;color:var(–tx);text-align:left;
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:8px;padding:18px 8px;border-radius:16px;cursor:pointer;
+transition:all .2s cubic-bezier(.34,1.4,.64,1);touch-action:manipulation;
+font-family:var(–hd);font-size:.76rem;font-weight:700;letter-spacing:.04em;
+color:#fff;text-align:center;position:relative;overflow:hidden;
+border:1px solid rgba(255,255,255,.13);
+box-shadow:0 6px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2),inset 0 -2px 0 rgba(0,0,0,.2);
 }
-.act-btn:active{transform:scale(.96)}
-.act-btn.on{border-color:var(–pr);background:var(–pr-bg);box-shadow:var(–glow)}
-.act-btn i{width:20px;text-align:center;font-size:.8rem;flex-shrink:0}
-.act-btn.full{grid-column:1/-1}
+.act-btn::before{
+content:’’;position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+background:linear-gradient(155deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.05) 45%,rgba(0,0,0,.08) 100%);
+}
+.act-btn::after{
+content:’’;position:absolute;top:0;left:15%;right:15%;height:1px;
+background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);
+}
+.act-btn:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 10px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -2px 0 rgba(0,0,0,.2)}
+.act-btn:active{transform:scale(.93);box-shadow:0 2px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(0,0,0,.25)}
+.act-btn i{font-size:1.4rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35));flex-shrink:0;width:auto}
+.act-btn span{font-size:.75rem;line-height:1;opacity:.96;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.act-btn.full{grid-column:1/-1;flex-direction:row;padding:15px 18px;gap:10px}
+.act-btn.full i{font-size:1.1rem}
+.act-btn.full span{font-size:.8rem}
+.act-btn[data-act=“scan”]{background:linear-gradient(145deg,#00c9a7 0%,#0096c7 100%)}
+.act-btn[data-act=“protect”]{background:linear-gradient(145deg,#00e676 0%,#00897b 100%)}
+.act-btn[data-act=“verify”]{background:linear-gradient(145deg,#ffd54f 0%,#f57c00 100%)}
+.act-btn[data-act=“compare”]{background:linear-gradient(145deg,#5c6bc0 0%,#8e54e9 100%)}
+.act-btn[data-act=“clean”]{background:linear-gradient(145deg,#f953c6 0%,#b91d73 100%)}
+.act-btn[data-act=“shield”]{background:linear-gradient(145deg,#ff7043 0%,#d84315 100%)}
+.act-btn[data-act=“replay”]{background:linear-gradient(145deg,#ef5350 0%,#b71c1c 100%)}
+.act-btn[data-act=“global”]{background:linear-gradient(145deg,#29b6f6 0%,#1565c0 100%)}
+.act-btn.on{box-shadow:0 0 0 2.5px rgba(255,255,255,.6),0 10px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.3)}
 .ctx-area{margin-top:12px}
 .ctx-area textarea{
 width:100%;min-height:80px;padding:10px;font-family:var(–mono);font-size:.76rem;
@@ -245,89 +268,6 @@ margin-bottom:10px;background:var(–sf2);
 .sc-fix{font-size:.76rem;color:var(–ok);display:flex;gap:5px;align-items:flex-start}
 .sc-threat i,.sc-fix i{margin-top:2px;flex-shrink:0;font-size:.66rem}
 
-/* ===== TAB BAR ===== */
-.tab-bar{
-display:flex;gap:0;border-bottom:1px solid var(–bdr);
-background:var(–sf1);padding:0 16px;
-position:sticky;top:54px;z-index:40;
-}
-.tab-btn{
-font-family:var(–hd);font-size:.75rem;font-weight:600;letter-spacing:.07em;
-padding:10px 16px;border:none;background:transparent;color:var(–tx3);
-cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
-transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px;
-}
-.tab-btn:hover{color:var(–tx)}
-.tab-btn.active{color:var(–pr);border-bottom-color:var(–pr)}
-.tab-btn i{font-size:.7rem}
-
-/* ===== SYSTEM STATUS TAB ===== */
-.status-tab{display:none;padding:16px;max-width:1100px;margin:0 auto}
-.status-tab.visible{display:block}
-.status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
-.status-card{
-background:var(–sf1);border:1px solid var(–bdr);border-radius:var(–r3);
-padding:16px;box-shadow:0 4px 24px rgba(0,0,0,.15);
-}
-.status-card.full{grid-column:1/-1}
-.sc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.sc-title{font-family:var(–hd);font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(–tx3);display:flex;align-items:center;gap:6px}
-.sc-title i{font-size:.7rem;color:var(–pr)}
-.verdict-chip{
-display:inline-flex;align-items:center;gap:5px;
-padding:5px 12px;border-radius:50px;font-size:.72rem;font-weight:700;
-font-family:var(–hd);letter-spacing:.06em;
-}
-.v-stable{background:var(–ok-bg);color:var(–ok);border:1px solid rgba(0,230,118,.25)}
-.v-degraded{background:var(–wn-bg);color:var(–wn);border:1px solid rgba(255,171,0,.25)}
-.v-critical{background:var(–dn-bg);color:var(–dn);border:1px solid rgba(255,82,82,.25)}
-.v-low{background:var(–pr-bg);color:var(–pr);border:1px solid rgba(0,212,170,.25)}
-.v-ready{background:var(–ok-bg);color:var(–ok);border:1px solid rgba(0,230,118,.25)}
-
-.metric-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(–bdr);font-size:.8rem}
-.metric-row:last-child{border-bottom:none}
-.metric-lbl{color:var(–tx2);font-size:.75rem}
-.metric-val{font-family:var(–mono);font-size:.72rem;font-weight:600;color:var(–tx)}
-
-.plane-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(–r);margin-bottom:4px;background:var(–sf2);border:1px solid var(–bdr)}
-.plane-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot-ok{background:var(–ok);box-shadow:0 0 6px rgba(0,230,118,.5)}
-.dot-wn{background:var(–wn);box-shadow:0 0 6px rgba(255,171,0,.5)}
-.dot-dn{background:var(–dn);box-shadow:0 0 6px rgba(255,82,82,.5)}
-.plane-name{font-size:.8rem;font-weight:600;flex:1}
-.plane-status{font-size:.7rem;font-weight:700}
-.plane-status.ok{color:var(–ok)}.plane-status.wn{color:var(–wn)}.plane-status.dn{color:var(–dn)}
-
-.hash-block{
-font-family:var(–mono);font-size:.65rem;color:var(–tx3);
-background:var(–sf2);border:1px solid var(–bdr);border-radius:var(–r);
-padding:8px 10px;margin-top:12px;word-break:break-all;line-height:1.8;
-}
-.hash-block span{color:var(–pr)}
-
-.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
-.module-chip{
-display:flex;align-items:center;gap:6px;padding:7px 10px;
-background:var(–sf2);border:1px solid var(–bdr);border-radius:var(–r);
-font-size:.72rem;font-weight:600;
-}
-.module-chip i{font-size:.65rem;color:var(–ok)}
-.module-chip .mod-id{font-family:var(–hd);font-size:.65rem;color:var(–pr);margin-left:auto}
-
-.status-banner{
-display:flex;align-items:center;gap:12px;
-background:var(–ok-bg);border:1px solid rgba(0,230,118,.2);
-border-radius:var(–r2);padding:14px 18px;margin-bottom:16px;
-}
-.sb-icon{font-size:1.4rem;color:var(–ok);flex-shrink:0}
-.sb-title{font-family:var(–hd);font-size:.95rem;font-weight:700;color:var(–ok)}
-.sb-sub{font-size:.76rem;color:var(–tx2);margin-top:2px}
-
-.timestamp-row{font-size:.68rem;color:var(–tx3);font-family:var(–mono);text-align:right;margin-top:8px}
-
-@media(max-width:900px){.status-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.status-grid{grid-template-columns:1fr}.status-card.full{grid-column:1}}
-
 /* Diff */
 .diff{font-family:var(–mono);font-size:.7rem;max-height:200px;overflow-y:auto;background:var(–sf1);border-radius:var(–r);padding:6px;border:1px solid var(–bdr)}
 .diff-a{background:var(–ok-bg);color:var(–ok);padding:1px 4px}
@@ -351,6 +291,45 @@ border-radius:var(–r2);padding:14px 18px;margin-bottom:16px;
 .anim-in{animation:animIn .3s ease forwards}
 @keyframes animIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+/* ===== TAB BAR ===== */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(–bdr);background:var(–sf1);padding:0 16px;position:sticky;top:54px;z-index:40}
+.tab-btn{font-family:var(–hd);font-size:.74rem;font-weight:600;letter-spacing:.08em;padding:11px 18px;border:none;background:transparent;color:var(–tx3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab-btn:hover{color:var(–tx)}
+.tab-btn.active{color:var(–pr);border-bottom-color:var(–pr)}
+.tab-btn i{font-size:.68rem}
+/* ===== SYSTEM STATUS ===== */
+.status-tab{display:none;padding:16px;max-width:1100px;margin:0 auto}
+.status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.status-card{background:var(–sf1);border:1px solid var(–bdr);border-radius:var(–r3);padding:16px;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.status-card.full{grid-column:1/-1}
+.sc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sc-title{font-family:var(–hd);font-size:.74rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(–tx3);display:flex;align-items:center;gap:6px}
+.sc-title i{font-size:.68rem;color:var(–pr)}
+.verdict-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:50px;font-size:.68rem;font-weight:700;font-family:var(–hd);letter-spacing:.06em}
+.v-stable{background:var(–ok-bg);color:var(–ok);border:1px solid rgba(0,230,118,.25)}
+.v-low{background:var(–pr-bg);color:var(–pr);border:1px solid rgba(0,212,170,.25)}
+.v-ready{background:var(–ok-bg);color:var(–ok);border:1px solid rgba(0,230,118,.25)}
+.metric-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(–bdr);font-size:.79rem}
+.metric-row:last-child{border-bottom:none}
+.metric-lbl{color:var(–tx2);font-size:.73rem}
+.metric-val{font-family:var(–mono);font-size:.7rem;font-weight:600;color:var(–tx)}
+.plane-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(–r);margin-bottom:4px;background:var(–sf2);border:1px solid var(–bdr)}
+.plane-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(–ok);box-shadow:0 0 6px rgba(0,230,118,.5)}
+.plane-name{font-size:.8rem;font-weight:600;flex:1}
+.plane-ok{font-size:.7rem;font-weight:700;color:var(–ok)}
+.hash-block{font-family:var(–mono);font-size:.63rem;color:var(–tx3);background:var(–sf2);border:1px solid var(–bdr);border-radius:var(–r);padding:8px 10px;margin-top:12px;word-break:break-all;line-height:1.9}
+.hash-block span{color:var(–pr)}
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:5px}
+.module-chip{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(–sf2);border:1px solid var(–bdr);border-radius:var(–r);font-size:.71rem;font-weight:600}
+.module-chip i{font-size:.6rem;color:var(–ok);flex-shrink:0}
+.mod-id{font-family:var(–hd);font-size:.6rem;color:var(–pr);margin-left:auto}
+.status-banner{display:flex;align-items:center;gap:12px;background:var(–ok-bg);border:1px solid rgba(0,230,118,.2);border-radius:var(–r2);padding:14px 18px;margin-bottom:16px}
+.sb-icon{font-size:1.4rem;color:var(–ok);flex-shrink:0}
+.sb-title{font-family:var(–hd);font-size:.92rem;font-weight:700;color:var(–ok)}
+.sb-sub{font-size:.74rem;color:var(–tx2);margin-top:2px}
+.ts-row{font-size:.64rem;color:var(–tx3);font-family:var(–mono);text-align:right;margin-top:8px}
+@media(max-width:900px){.status-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.status-grid{grid-template-columns:1fr}.status-card.full{grid-column:1}}
 /* ===== RESPONSIVE ===== */
 @media(max-width:1000px){
 .console{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
@@ -399,7 +378,7 @@ border-radius:var(–r2);padding:14px 18px;margin-bottom:16px;
     <span class="pill pill-ok"><i class="fas fa-circle" style="font-size:.45rem;margin-right:4px"></i>ONLINE</span>
     <span class="pill">DIRECT v1.1.0</span>
     <span class="pill pill-pr">CHAIN ACTIVE</span>
-    <span class="pill pill-ok">27 MODULES VERIFIED</span>
+    <span class="pill pill-ok">27 MODULES</span>
     <span class="pill">DEMO</span>
   </div>
 </div>
@@ -407,16 +386,9 @@ border-radius:var(–r2);padding:14px 18px;margin-bottom:16px;
 <!-- ===== TAB BAR ===== -->
 
 <div class="tab-bar" id="tab-bar" style="display:none">
-  <button class="tab-btn active" id="tab-console" onclick="switchTab('console')">
-    <i class="fas fa-terminal"></i>CONSOLE
-  </button>
-  <button class="tab-btn" id="tab-status" onclick="switchTab('status')">
-    <i class="fas fa-heartbeat"></i>SYSTEM STATUS
-  </button>
+  <button class="tab-btn active" id="tab-console" onclick="switchTab('console')"><i class="fas fa-terminal"></i>CONSOLE</button>
+  <button class="tab-btn" id="tab-status" onclick="switchTab('status')"><i class="fas fa-heartbeat"></i>SYSTEM STATUS</button>
 </div>
-
-<!-- ===== SYSTEM STATUS TAB ===== -->
-
 <div class="status-tab" id="status-view" style="display:none"></div>
 
 <!-- ===== CONSOLE ===== -->
@@ -438,14 +410,14 @@ border-radius:var(–r2);padding:14px 18px;margin-bottom:16px;
 <div id="main-chip"></div>
 
 <div class="act-grid">
-  <button class="act-btn" data-act="scan"><i class="fas fa-search" style="color:var(--pr)"></i>Scan</button>
-  <button class="act-btn" data-act="protect"><i class="fas fa-shield-alt" style="color:var(--ok)"></i>Protect</button>
-  <button class="act-btn" data-act="verify"><i class="fas fa-check-double" style="color:var(--wn)"></i>Verify</button>
-  <button class="act-btn" data-act="compare"><i class="fas fa-columns" style="color:var(--ac)"></i>Compare</button>
-  <button class="act-btn" data-act="clean"><i class="fas fa-broom" style="color:#EC4899"></i>Clean</button>
-  <button class="act-btn" data-act="shield"><i class="fas fa-robot" style="color:#FB923C"></i>AI Shield</button>
-  <button class="act-btn full" data-act="replay"><i class="fas fa-bolt" style="color:var(--dn)"></i>Attack Replay</button>
-  <button class="act-btn full" data-act="global"><i class="fas fa-globe" style="color:var(--ac)"></i>Verify Anywhere</button>
+  <button class="act-btn" data-act="scan"><i class="fas fa-search"></i><span>Scan</span></button>
+  <button class="act-btn" data-act="protect"><i class="fas fa-shield-alt"></i><span>Protect</span></button>
+  <button class="act-btn" data-act="verify"><i class="fas fa-check-double"></i><span>Verify</span></button>
+  <button class="act-btn" data-act="compare"><i class="fas fa-columns"></i><span>Compare</span></button>
+  <button class="act-btn" data-act="clean"><i class="fas fa-broom"></i><span>Clean</span></button>
+  <button class="act-btn" data-act="shield"><i class="fas fa-robot"></i><span>AI Shield</span></button>
+  <button class="act-btn full" data-act="replay"><i class="fas fa-bolt"></i><span>Attack Replay</span></button>
+  <button class="act-btn full" data-act="global"><i class="fas fa-globe"></i><span>Verify Anywhere</span></button>
 </div>
 
 <!-- Context areas for special actions -->
@@ -1171,23 +1143,18 @@ async function runGlobal(){
 /* ========================================= */
 /* ===         SYSTEM STATUS             === */
 /* ========================================= */
-
 function switchTab(tab){
-  var consolePnl=document.getElementById('console');
-  var statusView=document.getElementById('status-view');
-  var tabConsole=document.getElementById('tab-console');
-  var tabStatus=document.getElementById('tab-status');
+  var con=document.getElementById('console');
+  var sv=document.getElementById('status-view');
+  var tc=document.getElementById('tab-console');
+  var ts2=document.getElementById('tab-status');
   if(tab==='status'){
-    consolePnl.style.display='none';
-    statusView.style.display='block';
-    tabConsole.classList.remove('active');
-    tabStatus.classList.add('active');
+    con.style.display='none';sv.style.display='block';
+    tc.classList.remove('active');ts2.classList.add('active');
     renderSystemStatus();
   }else{
-    consolePnl.style.display='';
-    statusView.style.display='none';
-    tabConsole.classList.add('active');
-    tabStatus.classList.remove('active');
+    con.style.display='';sv.style.display='none';
+    tc.classList.add('active');ts2.classList.remove('active');
   }
 }
 
@@ -1199,188 +1166,107 @@ async function sha256str(str){
 
 async function renderSystemStatus(){
   var sv=document.getElementById('status-view');
-  sv.innerHTML='<div style="text-align:center;padding:40px;color:var(--tx3);font-size:.82rem"><i class="fas fa-circle-notch fa-spin" style="font-size:1.4rem;margin-bottom:10px;display:block;color:var(--pr)"></i>Computing integrity hashes…</div>';
-
+  sv.innerHTML='<div style="text-align:center;padding:40px;color:var(--tx3)"><i class="fas fa-circle-notch fa-spin" style="font-size:1.4rem;display:block;margin-bottom:10px;color:var(--pr)"></i>Computing integrity hashes…</div>';
   var ts=new Date().toISOString();
-
-  /* Planes */
   var planes=[
-    {name:'Semantic',id:'SEM',status:'OK'},
-    {name:'Behavioral',id:'BEH',status:'OK'},
-    {name:'Retrieval',id:'RET',status:'OK'},
-    {name:'Runtime',id:'RUN',status:'OK'},
-    {name:'Tier-X',id:'TIERX',status:'OK'},
-    {name:'Hidden-State Forensics',id:'HSF',status:'OK'}
+    {name:'Semantic',id:'SEM'},{name:'Behavioral',id:'BEH'},
+    {name:'Retrieval',id:'RET'},{name:'Runtime',id:'RUN'},
+    {name:'Tier-X Detection',id:'TIERX'},{name:'Hidden-State Forensics',id:'HSF'}
   ];
-
-  /* Modules verified */
   var modules=[
-    {id:'TXAO',name:'Tier-X Audit Orchestrator'},
-    {id:'UAIG',name:'Unified AI Integrity Gate'},
-    {id:'TXRM',name:'Tier-X Run Manifest'},
-    {id:'TXRF',name:'Tier-X Result Fuser'},
-    {id:'TXAR',name:'Tier-X Anomaly Rollup'},
-    {id:'TXPS',name:'Tier-X Priority Scorer'},
-    {id:'TXCR',name:'Tier-X Case Router'},
-    {id:'TXSR',name:'Tier-X State Receipt'},
-    {id:'TXSP',name:'Tier-X Status Page'},
-    {id:'AAC',name:'Activation Anomaly Consensus'},
-    {id:'HSEF',name:'Hidden State Evidence Fuser'},
-    {id:'LBD',name:'Layer Baseline Diff'},
-    {id:'HSFH',name:'Hidden State Forensics Harness'},
-    {id:'ISAR',name:'Internal State Anomaly Receipt'},
-    {id:'FSM2',name:'Forensics State Manifest'},
-    {id:'ACB',name:'Anomaly Consensus Band'},
-    {id:'FCR',name:'Forensics Case Receipt'},
-    {id:'SHS',name:'System Health Summary'},
-    {id:'PHS',name:'Plane Health Status'},
-    {id:'QSS',name:'Quarantine Status Summary'},
-    {id:'DSS2',name:'Drift Status Summary'},
-    {id:'SHR',name:'System Health Receipt'},
-    {id:'ORM2',name:'Operator Report Manifest'},
-    {id:'CLIRC',name:'CLI Readiness Check'},
-    {id:'FRC',name:'Fixture Readiness Check'},
-    {id:'ORRC',name:'Operator Report Readiness Check'},
+    {id:'TXAO',name:'Tier-X Audit Orchestrator'},{id:'UAIG',name:'Unified AI Integrity Gate'},
+    {id:'TXRM',name:'Tier-X Run Manifest'},{id:'TXRF',name:'Tier-X Result Fuser'},
+    {id:'TXAR',name:'Tier-X Anomaly Rollup'},{id:'TXPS',name:'Tier-X Priority Scorer'},
+    {id:'TXCR',name:'Tier-X Case Router'},{id:'TXSR',name:'Tier-X State Receipt'},
+    {id:'TXSP',name:'Tier-X Status Page'},{id:'AAC',name:'Activation Anomaly Consensus'},
+    {id:'HSEF',name:'Hidden State Evidence Fuser'},{id:'LBD',name:'Layer Baseline Diff'},
+    {id:'HSFH',name:'Hidden State Forensics Harness'},{id:'ISAR',name:'Internal State Anomaly Receipt'},
+    {id:'FSM2',name:'Forensics State Manifest'},{id:'ACB',name:'Anomaly Consensus Band'},
+    {id:'FCR',name:'Forensics Case Receipt'},{id:'SHS',name:'System Health Summary'},
+    {id:'PHS',name:'Plane Health Status'},{id:'QSS',name:'Quarantine Status Summary'},
+    {id:'DSS2',name:'Drift Status Summary'},{id:'SHR',name:'System Health Receipt'},
+    {id:'ORM2',name:'Operator Report Manifest'},{id:'CLIRC',name:'CLI Readiness Check'},
+    {id:'FRC',name:'Fixture Readiness Check'},{id:'ORRC',name:'Operator Report Readiness Check'},
     {id:'FBM',name:'Fixture Baseline Manifest'}
   ];
+  var sysH=await sha256str(JSON.stringify({verdict:'STABLE',planes:6,quarantine:0,tierx:0,label:'live'}));
+  var plnH=await sha256str(JSON.stringify({planes:planes.map(function(p){return p.id}),label:'live'}));
+  var modH=await sha256str(JSON.stringify({modules:modules.map(function(m){return m.id}).sort(),label:'live'}));
+  var masterH=await sha256str(sysH+plnH+modH+ts.slice(0,10));
 
-  /* Compute real hashes from canonical payloads */
-  var sysPayload=JSON.stringify({system_verdict:'STABLE',degraded_plane_count:0,active_quarantine_count:0,active_tierx_case_count:0,label:'live'});
-  var planePayload=JSON.stringify({planes:planes.map(function(p){return{plane:p.id,status:p.status}}),label:'live'});
-  var modPayload=JSON.stringify({modules:modules.map(function(m){return m.id}).sort(),label:'live'});
-
-  var sysHash=await sha256str(sysPayload);
-  var planeHash=await sha256str(planePayload);
-  var modHash=await sha256str(modPayload);
-  var masterHash=await sha256str(sysHash+planeHash+modHash+ts.slice(0,10));
-
-  /* Render */
   var planesHtml=planes.map(function(p){
-    return '<div class="plane-row"><div class="plane-dot dot-ok"></div><div class="plane-name">'+p.name+'</div><div class="plane-status ok"><i class="fas fa-check"></i> OK</div><div style="font-size:.65rem;color:var(--tx3);font-family:var(--mono);margin-left:8px">'+p.id+'</div></div>';
+    return '<div class="plane-row"><div class="plane-dot"></div><div class="plane-name">'+p.name+'</div><div class="plane-ok"><i class="fas fa-check"></i> OK</div><div style="font-size:.62rem;color:var(--tx3);font-family:var(--mono);margin-left:8px">'+p.id+'</div></div>';
   }).join('');
-
-  var modulesHtml=modules.map(function(m){
+  var modsHtml=modules.map(function(m){
     return '<div class="module-chip"><i class="fas fa-check-circle"></i>'+m.name+'<span class="mod-id">'+m.id+'</span></div>';
   }).join('');
 
   sv.innerHTML=
-    '<div class="status-banner">'+
-      '<div class="sb-icon"><i class="fas fa-shield-check"></i></div>'+
-      '<div><div class="sb-title">ALL SYSTEMS OPERATIONAL</div>'+
-      '<div class="sb-sub">6 detection planes active · 27 modules verified · 0 anomalies · 0 quarantine · Tier-X posture QUIET</div></div>'+
-      '<div style="margin-left:auto"><div class="verdict-chip v-stable"><i class="fas fa-circle" style="font-size:.45rem"></i>STABLE</div></div>'+
-    '</div>'+
-
+    '<div class="status-banner"><div class="sb-icon"><i class="fas fa-shield-check"></i></div>'+
+    '<div><div class="sb-title">ALL SYSTEMS OPERATIONAL</div>'+
+    '<div class="sb-sub">6 detection planes · 27 modules verified · 0 anomalies · 0 quarantine · Tier-X posture QUIET</div></div>'+
+    '<div style="margin-left:auto"><div class="verdict-chip v-stable"><i class="fas fa-circle" style="font-size:.38rem"></i>STABLE</div></div></div>'+
     '<div class="status-grid">'+
 
-      /* System Health */
-      '<div class="status-card">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-heartbeat"></i>SYSTEM HEALTH</div>'+
-          '<div class="verdict-chip v-stable">STABLE</div>'+
-        '</div>'+
-        '<div class="metric-row"><span class="metric-lbl">System Verdict</span><span class="metric-val" style="color:var(--ok)">STABLE</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Degraded Planes</span><span class="metric-val">0 / 6</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Active Quarantine</span><span class="metric-val">0</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Tier-X Cases Active</span><span class="metric-val">0</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Module SHR</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
-        '<div class="hash-block">SHS · <span>'+sysHash.slice(0,32)+'…</span></div>'+
-        '<div class="timestamp-row">'+ts+'</div>'+
-      '</div>'+
+    '<div class="status-card"><div class="sc-head"><div class="sc-title"><i class="fas fa-heartbeat"></i>SYSTEM HEALTH</div><div class="verdict-chip v-stable">STABLE</div></div>'+
+    '<div class="metric-row"><span class="metric-lbl">System Verdict</span><span class="metric-val" style="color:var(--ok)">STABLE</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Degraded Planes</span><span class="metric-val">0 / 6</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Active Quarantine</span><span class="metric-val">0</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Tier-X Cases Active</span><span class="metric-val">0</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Health Receipt (SHR)</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
+    '<div class="hash-block">SHS · <span>'+sysH.slice(0,32)+'…</span></div>'+
+    '<div class="ts-row">'+ts+'</div></div>'+
 
-      /* Tier-X Status */
-      '<div class="status-card">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-radar"></i>TIER-X POSTURE</div>'+
-          '<div class="verdict-chip v-low">QUIET</div>'+
-        '</div>'+
-        '<div class="metric-row"><span class="metric-lbl">Active Cases</span><span class="metric-val">0</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Priority Band</span><span class="metric-val" style="color:var(--ok)">LOW</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Dominant Route</span><span class="metric-val">ARCHIVE</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Orchestrator (TXAO)</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Integrity Gate (UAIG)</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
-        '<div class="hash-block">TXSP · <span>'+masterHash.slice(0,32)+'…</span></div>'+
-        '<div class="timestamp-row">'+ts+'</div>'+
-      '</div>'+
+    '<div class="status-card"><div class="sc-head"><div class="sc-title"><i class="fas fa-crosshairs"></i>TIER-X POSTURE</div><div class="verdict-chip v-low">QUIET</div></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Active Cases</span><span class="metric-val">0</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Priority Band</span><span class="metric-val" style="color:var(--ok)">LOW</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Dominant Route</span><span class="metric-val">ARCHIVE</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Orchestrator (TXAO)</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Integrity Gate (UAIG)</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
+    '<div class="hash-block">TXSP · <span>'+masterH.slice(0,32)+'…</span></div>'+
+    '<div class="ts-row">'+ts+'</div></div>'+
 
-      /* Forensics */
-      '<div class="status-card">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-microscope"></i>FORENSICS LAYER</div>'+
-          '<div class="verdict-chip v-stable">NORMAL</div>'+
-        '</div>'+
-        '<div class="metric-row"><span class="metric-lbl">Activation Consensus (AAC)</span><span class="metric-val" style="color:var(--ok)">NORMAL</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Layer Baseline (LBD)</span><span class="metric-val" style="color:var(--ok)">MATCH</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Evidence Fuser (HSEF)</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Harness (HSFH)</span><span class="metric-val" style="color:var(--ok)">NORMAL</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Anomaly Count</span><span class="metric-val">0</span></div>'+
-        '<div class="hash-block">FSM2 · <span>'+planeHash.slice(0,32)+'…</span></div>'+
-        '<div class="timestamp-row">'+ts+'</div>'+
-      '</div>'+
+    '<div class="status-card"><div class="sc-head"><div class="sc-title"><i class="fas fa-microscope"></i>FORENSICS LAYER</div><div class="verdict-chip v-stable">NORMAL</div></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Activation Consensus (AAC)</span><span class="metric-val" style="color:var(--ok)">NORMAL</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Layer Baseline (LBD)</span><span class="metric-val" style="color:var(--ok)">MATCH</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Evidence Fuser (HSEF)</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Harness (HSFH)</span><span class="metric-val" style="color:var(--ok)">NORMAL</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Anomaly Count</span><span class="metric-val">0</span></div>'+
+    '<div class="hash-block">FSM2 · <span>'+plnH.slice(0,32)+'…</span></div>'+
+    '<div class="ts-row">'+ts+'</div></div>'+
 
-      /* Plane Health */
-      '<div class="status-card full">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-layer-group"></i>DETECTION PLANE HEALTH — PHS</div>'+
-          '<div class="verdict-chip v-stable">ALL CLEAR</div>'+
-        '</div>'+
-        planesHtml+
-        '<div class="hash-block" style="margin-top:10px">PHS · <span>'+planeHash+'</span></div>'+
-        '<div class="timestamp-row">'+ts+'</div>'+
-      '</div>'+
+    '<div class="status-card full"><div class="sc-head"><div class="sc-title"><i class="fas fa-layer-group"></i>DETECTION PLANE HEALTH — PHS</div><div class="verdict-chip v-stable">ALL CLEAR</div></div>'+
+    planesHtml+
+    '<div class="hash-block">PHS · <span>'+plnH+'</span></div>'+
+    '<div class="ts-row">'+ts+'</div></div>'+
 
-      /* Readiness */
-      '<div class="status-card">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-list-check"></i>READINESS CHECKS</div>'+
-          '<div class="verdict-chip v-ready">READY</div>'+
-        '</div>'+
-        '<div class="metric-row"><span class="metric-lbl">CLI Layer (CLIRC)</span><span class="metric-val" style="color:var(--ok)">READY</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Fixture Layer (FRC)</span><span class="metric-val" style="color:var(--ok)">READY</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Operator Reports (ORRC)</span><span class="metric-val" style="color:var(--ok)">READY</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Total Expected Files</span><span class="metric-val">27 / 27</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Missing</span><span class="metric-val">0</span></div>'+
-      '</div>'+
+    '<div class="status-card"><div class="sc-head"><div class="sc-title"><i class="fas fa-list-check"></i>READINESS CHECKS</div><div class="verdict-chip v-ready">READY</div></div>'+
+    '<div class="metric-row"><span class="metric-lbl">CLI Layer (CLIRC)</span><span class="metric-val" style="color:var(--ok)">READY</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Fixture Layer (FRC)</span><span class="metric-val" style="color:var(--ok)">READY</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Operator Reports (ORRC)</span><span class="metric-val" style="color:var(--ok)">READY</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Expected Files</span><span class="metric-val">27 / 27</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Missing</span><span class="metric-val">0</span></div></div>'+
 
-      /* Drift & Quarantine */
-      '<div class="status-card">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-wave-square"></i>DRIFT & QUARANTINE</div>'+
-          '<div class="verdict-chip v-stable">CLEAR</div>'+
-        '</div>'+
-        '<div class="metric-row"><span class="metric-lbl">Active Drift Count</span><span class="metric-val">0</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Highest Drift Band</span><span class="metric-val" style="color:var(--ok)">LOW</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Dominant Source</span><span class="metric-val">NONE</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Quarantine Items</span><span class="metric-val">0</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Module DSS2</span><span class="metric-val" style="color:var(--ok)">PASS</span></div>'+
-      '</div>'+
+    '<div class="status-card"><div class="sc-head"><div class="sc-title"><i class="fas fa-wave-square"></i>DRIFT & QUARANTINE</div><div class="verdict-chip v-stable">CLEAR</div></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Active Drift Count</span><span class="metric-val">0</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Highest Drift Band</span><span class="metric-val" style="color:var(--ok)">LOW</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Dominant Source</span><span class="metric-val">NONE</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Quarantine Items</span><span class="metric-val">0</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Module DSS2</span><span class="metric-val" style="color:var(--ok)">PASS</span></div></div>'+
 
-      /* Operator Reports */
-      '<div class="status-card">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-file-shield"></i>OPERATOR REPORTS — ORM2</div>'+
-          '<div class="verdict-chip v-ready">6 ACTIVE</div>'+
-        '</div>'+
-        '<div class="metric-row"><span class="metric-lbl">System Health Summary</span><span class="metric-val" style="color:var(--ok)">SHS</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Plane Health Status</span><span class="metric-val" style="color:var(--ok)">PHS</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Quarantine Summary</span><span class="metric-val" style="color:var(--ok)">QSS</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Drift Summary</span><span class="metric-val" style="color:var(--ok)">DSS2</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">Tier-X Status Page</span><span class="metric-val" style="color:var(--ok)">TXSP</span></div>'+
-        '<div class="metric-row"><span class="metric-lbl">STATUS_OVERVIEW.md</span><span class="metric-val" style="color:var(--ok)">PRESENT</span></div>'+
-      '</div>'+
+    '<div class="status-card"><div class="sc-head"><div class="sc-title"><i class="fas fa-file-shield"></i>OPERATOR REPORTS</div><div class="verdict-chip v-ready">6 ACTIVE</div></div>'+
+    '<div class="metric-row"><span class="metric-lbl">System Health Summary</span><span class="metric-val" style="color:var(--ok)">SHS</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Plane Health Status</span><span class="metric-val" style="color:var(--ok)">PHS</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Quarantine Summary</span><span class="metric-val" style="color:var(--ok)">QSS</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Drift Summary</span><span class="metric-val" style="color:var(--ok)">DSS2</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">Tier-X Status Page</span><span class="metric-val" style="color:var(--ok)">TXSP</span></div>'+
+    '<div class="metric-row"><span class="metric-lbl">STATUS_OVERVIEW.md</span><span class="metric-val" style="color:var(--ok)">PRESENT</span></div></div>'+
 
-      /* All Modules */
-      '<div class="status-card full">'+
-        '<div class="sc-head">'+
-          '<div class="sc-title"><i class="fas fa-microchip"></i>VERIFIED MODULES — '+modules.length+' SMOKE-TESTED</div>'+
-          '<div class="verdict-chip v-stable">ALL PASS</div>'+
-        '</div>'+
-        '<div class="module-grid">'+modulesHtml+'</div>'+
-        '<div class="hash-block" style="margin-top:12px">MODULE MANIFEST · <span>'+modHash+'</span><br>MASTER INTEGRITY HASH · <span>'+masterHash+'</span></div>'+
-        '<div class="timestamp-row">Generated '+ts+' · DIRECT v1.0.0 · IAMUS Inc.</div>'+
-      '</div>'+
-
-    '</div>'; /* end status-grid */
+    '<div class="status-card full"><div class="sc-head"><div class="sc-title"><i class="fas fa-microchip"></i>VERIFIED MODULES — 27 SMOKE-TESTED</div><div class="verdict-chip v-stable">ALL PASS</div></div>'+
+    '<div class="module-grid">'+modsHtml+'</div>'+
+    '<div class="hash-block">MODULE MANIFEST · <span>'+modH+'</span><br>MASTER INTEGRITY HASH · <span>'+masterH+'</span></div>'+
+    '<div class="ts-row">Generated '+ts+' · DIRECT v1.1.0 · IAMUS Inc.</div></div>'+
+    '</div>';
 }
 
 /* ========================================= */
@@ -1453,8 +1339,7 @@ function init(){
         var con=document.getElementById('console');
         if(splash)splash.classList.add('out');
         if(topbar)topbar.style.display='';
-        var tabbar=document.getElementById('tab-bar');
-        if(tabbar)tabbar.style.display='';
+        var tabbar=document.getElementById('tab-bar');if(tabbar)tabbar.style.display='';
         if(con){con.style.display='';con.style.opacity='0';con.style.transition='opacity .4s ease';
           setTimeout(function(){con.style.opacity='1'},50)}
         setTimeout(function(){if(splash&&splash.parentNode)splash.parentNode.removeChild(splash)},600);
