@@ -344,7 +344,91 @@ margin-bottom:10px;background:var(–sf2);
 .tb-pills{display:none}
 .act-grid{grid-template-columns:1fr 1fr;gap:5px}
 .pnl{padding:12px}
+}/* ── CANDY BUTTON STYLE ─────────────────────────────────────────── */
+
+/* Base action button reset */
+button, .btn, [class*="btn-"], input[type="button"], input[type="submit"] {
+  border: none;
+  cursor: pointer;
+  border-radius: 2em;
+  padding: 0.55em 1.4em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.35),
+    inset 0 -2px 4px rgba(0,0,0,0.35),
+    0 3px 8px rgba(0,0,0,0.45);
+  transition: filter 0.15s, transform 0.1s;
+  position: relative;
+  overflow: hidden;
 }
+
+button:hover, .btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+button:active, .btn:active {
+  transform: translateY(1px);
+  filter: brightness(0.9);
+}
+
+/* Gloss shine pseudo-element */
+button::before, .btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 45%;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.40) 0%,
+    rgba(255,255,255,0.08) 100%);
+  border-radius: 0 0 50% 50%;
+  pointer-events: none;
+}
+
+/* ── Per-button hue assignments ──────────────────────────────────── */
+
+/* Scan  → deep teal */
+#scanBtn, button:contains("Scan"), .action-btn[data-action="scan"] {
+  background: radial-gradient(ellipse at 60% 30%, #005f5f, #002828);
+  color: #7fffd4; /* aquamarine */
+}
+
+/* Protect → deep indigo */
+#protectBtn, button:contains("Protect"), .action-btn[data-action="protect"] {
+  background: radial-gradient(ellipse at 60% 30%, #1a006b, #08002e);
+  color: #b8a0ff;
+}
+
+/* Verify → deep green */
+#verifyBtn, button:contains("Verify"), .action-btn[data-action="verify"] {
+  background: radial-gradient(ellipse at 60% 30%, #004d00, #001a00);
+  color: #80ff80;
+}
+
+/* Compare → deep orange */
+#compareBtn, button:contains("Compare"), .action-btn[data-action="compare"] {
+  background: radial-gradient(ellipse at 60% 30%, #7a2e00, #2e0f00);
+  color: #ffb870;
+}
+
+/* Clean → deep magenta */
+#cleanBtn, button:contains("Clean"), .action-btn[data-action="clean"] {
+  background: radial-gradient(ellipse at 60% 30%, #6b005a, #2a0022);
+  color: #ff90ea;
+}
+
+/* AI Shield → deep royal blue */
+#aiShieldBtn, button:contains("AI Shield"), .action-btn[data-action="ai-shield"] {
+  background: radial-gradient(ellipse at 60% 30%, #00207a, #000c2e);
+  color: #80c8ff;
+}
+
+/* Attack Replay → deep crimson */
+#attackBtn, button:contains("Attack"), .action-btn[data-action="attack"] {
+  background: radial-gradient(ellipse at 60% 30%, #7a0000, #2​​​​​​​​​​​​​​​​
+
 </style>
 
 </head>
