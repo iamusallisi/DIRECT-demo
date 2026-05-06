@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAICS Control Room — IAMUS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;900&family=Rajdhani:wght@300;400;600&display=swap');
+
+:root {
+–bg:       #020408;
+–panel:    #050c14;
+–border:   #0d2035;
+–glow:     #00d4ff;
+–glow2:    #c9a84c;
+–glow3:    #00ff88;
+–glow4:    #ff4466;
+–text:     #8ab8d4;
+–text-hi:  #e8f4ff;
+–dim:      #2a4a6a;
+–mono:     ‘Share Tech Mono’, monospace;
+–display:  ‘Orbitron’, sans-serif;
+–body:     ‘Rajdhani’, sans-serif;
+}
+
+- { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: var(–body);
+overflow: hidden;
+height: 100vh;
+width: 100vw;
+user-select: none;
+}
+
+/* ── SCANLINE OVERLAY ── */
+body::after {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: repeating-linear-gradient(
+0deg,
+transparent,
+transparent 2px,
+rgba(0,212,255,0.015) 2px,
+rgba(0,212,255,0.015) 4px
+);
+pointer-events: none;
+z-index: 1000;
+}
+
+/* ── LAYOUT ── */
+.root {
+display: grid;
+grid-template-columns: 220px 1fr 220px;
+grid-template-rows: 48px 1fr 160px;
+height: 100vh;
+gap: 1px;
+background: var(–border);
+}
+
+/* ── TOP BAR ── */
+.topbar {
+grid-column: 1 / -1;
+background: var(–panel);
+display: flex;
+align-items: center;
+padding: 0 20px;
+gap: 24px;
+border-bottom: 1px solid var(–border);
+}
+
+.logo {
+font-family: var(–display);
+font-size: 14px;
+font-weight: 900;
+color: var(–glow);
+letter-spacing: 0.15em;
+text-shadow: 0 0 20px var(–glow);
+flex-shrink: 0;
+}
+
+.topbar-status {
+display: flex;
+gap: 20px;
+align-items: center;
+flex: 1;
+}
+
+.status-item {
+font-family: var(–mono);
+font-size: 10px;
+color: var(–dim);
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.status-item.active { color: var(–glow3); }
+.status-item.warn   { color: var(–glow2); }
+.status-item.alert  { color: var(–glow4); }
+
+.status-dot {
+width: 6px; height: 6px;
+border-radius: 50%;
+background: currentColor;
+box-shadow: 0 0 6px currentColor;
+animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.3; }
+}
+
+.session-id {
+margin-left: auto;
+font-family: var(–mono);
+font-size: 9px;
+color: var(–dim);
+letter-spacing: 0.1em;
+}
+
+/* ── PANELS ── */
+.panel {
+background: var(–panel);
+overflow: hidden;
+position: relative;
+}
+
+.panel-header {
+font-family: var(–display);
+font-size: 9px;
+letter-spacing: 0.2em;
+color: var(–glow);
+padding: 10px 14px 8px;
+border-bottom: 1px solid var(–border);
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.panel-header span {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–dim);
+letter-spacing: 0;
+}
+
+/* ── LEFT PANEL — NODE INSPECTOR ── */
+.left-panel { grid-row: 2; }
+
+.node-list {
+padding: 8px;
+overflow-y: auto;
+height: calc(100% - 36px);
+}
+
+.node-item {
+display: grid;
+grid-template-columns: 28px 1fr auto;
+align-items: center;
+gap: 6px;
+padding: 5px 6px;
+border-radius: 2px;
+cursor: pointer;
+transition: background 0.1s;
+border-left: 2px solid transparent;
+margin-bottom: 1px;
+}
+
+.node-item:hover { background: rgba(0,212,255,0.05); }
+.node-item.selected {
+background: rgba(0,212,255,0.08);
+border-left-color: var(–glow);
+}
+
+.node-id {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–dim);
+text-align: right;
+}
+
+.node-symbol {
+font-size: 11px;
+color: var(–text);
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+.node-bar-wrap {
+width: 40px;
+height: 4px;
+background: rgba(255,255,255,0.05);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.node-bar {
+height: 100%;
+border-radius: 2px;
+transition: width 0.5s;
+}
+
+.tag-observed  { color: var(–glow3); }
+.tag-recalled  { color: var(–glow); }
+.tag-inferred  { color: var(–glow2); }
+.tag-hypothetical { color: #aa66ff; }
+.tag-predicted { color: var(–glow4); }
+.tag-untagged  { color: var(–dim); }
+
+/* ── CENTER — 3D CANVAS ── */
+.center-panel {
+grid-row: 2;
+position: relative;
+overflow: hidden;
+}
+
+canvas#gaics3d {
+display: block;
+width: 100%;
+height: 100%;
+}
+
+/* ── MODE SELECTOR ── */
+.mode-bar {
+position: absolute;
+top: 12px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+gap: 2px;
+background: rgba(2,4,8,0.8);
+border: 1px solid var(–border);
+padding: 3px;
+border-radius: 3px;
+}
+
+.mode-btn {
+font-family: var(–display);
+font-size: 9px;
+letter-spacing: 0.12em;
+padding: 6px 14px;
+border: none;
+background: transparent;
+color: var(–dim);
+cursor: pointer;
+border-radius: 2px;
+transition: all 0.2s;
+}
+
+.mode-btn:hover { color: var(–text); background: rgba(0,212,255,0.05); }
+.mode-btn.active {
+background: var(–glow);
+color: var(–bg);
+text-shadow: none;
+box-shadow: 0 0 12px var(–glow);
+}
+.mode-btn.active.operational { background: var(–glow3); }
+.mode-btn.active.exploratory { background: #aa66ff; box-shadow: 0 0 12px #aa66ff; }
+.mode-btn.active.expressive  { background: var(–glow2); }
+.mode-btn.active.diagnostic  { background: var(–glow4); }
+
+/* ── HOVER TOOLTIP ── */
+.node-tooltip {
+position: absolute;
+background: rgba(2,4,8,0.95);
+border: 1px solid var(–glow);
+padding: 8px 12px;
+font-family: var(–mono);
+font-size: 10px;
+color: var(–text-hi);
+pointer-events: none;
+display: none;
+z-index: 100;
+min-width: 160px;
+box-shadow: 0 0 20px rgba(0,212,255,0.2);
+}
+
+.node-tooltip.visible { display: block; }
+
+.tooltip-row {
+display: flex;
+justify-content: space-between;
+gap: 12px;
+margin-bottom: 3px;
+}
+
+.tooltip-key { color: var(–dim); }
+.tooltip-val { color: var(–glow); }
+
+/* ── CONTROLS OVERLAY ── */
+.controls-hint {
+position: absolute;
+bottom: 12px;
+left: 12px;
+font-family: var(–mono);
+font-size: 9px;
+color: var(–dim);
+line-height: 1.8;
+}
+
+/* ── RIGHT PANEL — LIVE DATA ── */
+.right-panel { grid-row: 2; }
+
+.metric-block {
+padding: 10px 14px;
+border-bottom: 1px solid var(–border);
+}
+
+.metric-label {
+font-family: var(–display);
+font-size: 8px;
+letter-spacing: 0.2em;
+color: var(–dim);
+margin-bottom: 4px;
+}
+
+.metric-value {
+font-family: var(–mono);
+font-size: 18px;
+color: var(–glow);
+text-shadow: 0 0 10px var(–glow);
+line-height: 1;
+}
+
+.metric-value.gold { color: var(–glow2); text-shadow: 0 0 10px var(–glow2); }
+.metric-value.green { color: var(–glow3); text-shadow: 0 0 10px var(–glow3); }
+.metric-value.red  { color: var(–glow4); text-shadow: 0 0 10px var(–glow4); }
+
+.metric-sub {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–dim);
+margin-top: 2px;
+}
+
+/* Road law bars */
+.road-law-list { padding: 10px 14px; }
+
+.road-law-row {
+display: flex;
+align-items: center;
+gap: 8px;
+margin-bottom: 8px;
+}
+
+.road-law-name {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–dim);
+width: 70px;
+flex-shrink: 0;
+}
+
+.road-law-track {
+flex: 1;
+height: 3px;
+background: rgba(255,255,255,0.04);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.road-law-fill {
+height: 100%;
+border-radius: 2px;
+transition: width 0.8s ease;
+}
+
+.road-law-val {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–glow);
+width: 36px;
+text-align: right;
+flex-shrink: 0;
+}
+
+/* ── BOTTOM — INTERACTION CONSOLE ── */
+.bottom-panel {
+grid-column: 1 / -1;
+background: var(–panel);
+display: grid;
+grid-template-columns: 1fr 1fr 1fr 1fr;
+gap: 1px;
+background: var(–border);
+}
+
+.console-section {
+background: var(–panel);
+padding: 10px 14px;
+overflow: hidden;
+}
+
+.console-title {
+font-family: var(–display);
+font-size: 8px;
+letter-spacing: 0.2em;
+color: var(–glow2);
+margin-bottom: 8px;
+}
+
+/* Dream controls */
+.dream-controls {
+display: flex;
+flex-direction: column;
+gap: 6px;
+}
+
+.slider-row {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.slider-label {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–dim);
+width: 70px;
+flex-shrink: 0;
+}
+
+input[type=range] {
+flex: 1;
+height: 3px;
+-webkit-appearance: none;
+background: var(–border);
+border-radius: 2px;
+outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+-webkit-appearance: none;
+width: 10px; height: 10px;
+border-radius: 50%;
+background: var(–glow);
+box-shadow: 0 0 8px var(–glow);
+cursor: pointer;
+}
+
+.slider-val {
+font-family: var(–mono);
+font-size: 9px;
+color: var(–glow);
+width: 28px;
+text-align: right;
+}
+
+/* Action buttons */
+.action-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 4px;
+}
+
+.action-btn {
+font-family: var(–mono);
+font-size: 9px;
+padding: 6px 8px;
+border: 1px solid var(–border);
+background: transparent;
+color: var(–text);
+cursor: pointer;
+border-radius: 2px;
+transition: all 0.15s;
+letter-spacing: 0.05em;
+}
+
+.action-btn:hover {
+border-color: var(–glow);
+color: var(–glow);
+background: rgba(0,212,255,0.05);
+box-shadow: 0 0 8px rgba(0,212,255,0.2);
+}
+
+.action-btn.dream-btn {
+grid-column: 1 / -1;
+border-color: #aa66ff44;
+color: #aa66ff;
+}
+
+.action-btn.dream-btn:hover {
+border-color: #aa66ff;
+box-shadow: 0 0 12px rgba(170,102,255,0.3);
+}
+
+/* Event log */
+.event-log {
+height: 100px;
+overflow-y: auto;
+font-family: var(–mono);
+font-size: 9px;
+line-height: 1.8;
+}
+
+.event-log::-webkit-scrollbar { width: 3px; }
+.event-log::-webkit-scrollbar-track { background: transparent; }
+.event-log::-webkit-scrollbar-thumb { background: var(–border); }
+
+.log-entry {
+display: flex;
+gap: 8px;
+opacity: 0;
+animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+.log-time { color: var(–dim); flex-shrink: 0; }
+.log-type { flex-shrink: 0; }
+.log-msg  { color: var(–text); }
+
+/* Node manipulator */
+.node-manip {
+display: flex;
+flex-direction: column;
+gap: 6px;
+}
+
+.manip-select {
+font-family: var(–mono);
+font-size: 10px;
+background: rgba(0,212,255,0.05);
+border: 1px solid var(–border);
+color: var(–text);
+padding: 4px 8px;
+border-radius: 2px;
+width: 100%;
+outline: none;
+}
+
+.manip-select:focus { border-color: var(–glow); }
+
+</style>
+</head>
+<body>
+
+<div class="root">
+
+  <!-- TOP BAR -->
+
+  <div class="topbar">
+    <div class="logo">GAICS</div>
+    <div class="topbar-status">
+      <div class="status-item active" id="mode-indicator">
+        <div class="status-dot"></div>
+        <span id="mode-label">OPERATIONAL</span>
+      </div>
+      <div class="status-item active">
+        <div class="status-dot"></div>
+        <span>65 NODES</span>
+      </div>
+      <div class="status-item active" id="alignment-indicator">
+        <div class="status-dot"></div>
+        <span id="align-label">ALIGN 0.941</span>
+      </div>
+      <div class="status-item" id="receipt-indicator">
+        <div class="status-dot"></div>
+        <span id="receipt-label">0 RECEIPTS</span>
+      </div>
+      <div class="status-item warn" id="drift-indicator" style="display:none">
+        <div class="status-dot"></div>
+        <span>DRIFT DETECTED</span>
+      </div>
+    </div>
+    <div class="session-id" id="session-display">SESSION: INITIALIZING...</div>
+  </div>
+
+  <!-- LEFT PANEL — NODE INSPECTOR -->
+
+  <div class="panel left-panel">
+    <div class="panel-header">
+      NODE INSPECTOR
+      <span id="active-count">0 ACTIVE</span>
+    </div>
+    <div class="node-list" id="node-list"></div>
+  </div>
+
+  <!-- CENTER — 3D VIEW -->
+
+  <div class="panel center-panel">
+    <canvas id="gaics3d"></canvas>
+
+```
+<div class="mode-bar">
+  <button class="mode-btn operational active" onclick="setMode('OPERATIONAL')">OPERATIONAL</button>
+  <button class="mode-btn exploratory"        onclick="setMode('EXPLORATORY')">EXPLORATORY</button>
+  <button class="mode-btn expressive"         onclick="setMode('EXPRESSIVE')">EXPRESSIVE</button>
+  <button class="mode-btn diagnostic"         onclick="setMode('DIAGNOSTIC')">DIAGNOSTIC</button>
+</div>
+
+<div class="node-tooltip" id="tooltip">
+  <div class="tooltip-row"><span class="tooltip-key">NODE</span><span class="tooltip-val" id="tt-id">—</span></div>
+  <div class="tooltip-row"><span class="tooltip-key">SYMBOL</span><span class="tooltip-val" id="tt-symbol">—</span></div>
+  <div class="tooltip-row"><span class="tooltip-key">TAG</span><span class="tooltip-val" id="tt-tag">—</span></div>
+  <div class="tooltip-row"><span class="tooltip-key">ACTIVATION</span><span class="tooltip-val" id="tt-act">—</span></div>
+  <div class="tooltip-row"><span class="tooltip-key">ALIGNMENT</span><span class="tooltip-val" id="tt-align">—</span></div>
+  <div class="tooltip-row"><span class="tooltip-key">ROLE</span><span class="tooltip-val" id="tt-role">—</span></div>
+</div>
+
+<div class="controls-hint">
+  DRAG — rotate &nbsp;|&nbsp; SCROLL — zoom &nbsp;|&nbsp; CLICK — select node
+</div>
+```
+
+  </div>
+
+  <!-- RIGHT PANEL — METRICS -->
+
+  <div class="panel right-panel">
+    <div class="panel-header">LIVE METRICS</div>
+
+```
+<div class="metric-block">
+  <div class="metric-label">SURFACE ALIGNMENT</div>
+  <div class="metric-value gold" id="m-alignment">0.941</div>
+  <div class="metric-sub">TARGET: 0.953</div>
+</div>
+
+<div class="metric-block">
+  <div class="metric-label">MEAN ACTIVATION</div>
+  <div class="metric-value green" id="m-activation">0.000</div>
+  <div class="metric-sub">65 NODES</div>
+</div>
+
+<div class="metric-block">
+  <div class="metric-label">HEALTH SCORE</div>
+  <div class="metric-value" id="m-health">—</div>
+  <div class="metric-sub" id="m-health-sub">RUN DIAGNOSTIC</div>
+</div>
+
+<div class="metric-block">
+  <div class="metric-label">DREAM INSIGHTS</div>
+  <div class="metric-value" id="m-insights">0</div>
+  <div class="metric-sub">TOTAL ACCUMULATED</div>
+</div>
+
+<div class="panel-header" style="margin-top:4px">ROAD LAWS</div>
+<div class="road-law-list" id="road-law-list"></div>
+```
+
+  </div>
+
+  <!-- BOTTOM — CONTROL CONSOLE -->
+
+  <div class="bottom-panel">
+
+```
+<!-- DREAM CONTROLS -->
+<div class="console-section">
+  <div class="console-title">EXPLORATORY CONTROLS</div>
+  <div class="dream-controls">
+    <div class="slider-row">
+      <span class="slider-label">CURIOSITY</span>
+      <input type="range" id="curiosity-slider" min="0" max="100" value="70"
+             oninput="document.getElementById('curiosity-val').textContent=
+               (this.value/100).toFixed(2)">
+      <span class="slider-val" id="curiosity-val">0.70</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">CYCLES</span>
+      <input type="range" id="cycles-slider" min="1" max="50" value="12"
+             oninput="document.getElementById('cycles-val').textContent=this.value">
+      <span class="slider-val" id="cycles-val">12</span>
+    </div>
+    <button class="action-btn dream-btn" onclick="runDream()">
+      ▶ ENTER DREAM STATE
+    </button>
+  </div>
+</div>
+
+<!-- NODE MANIPULATOR -->
+<div class="console-section">
+  <div class="console-title">NODE MANIPULATOR</div>
+  <div class="node-manip">
+    <select class="manip-select" id="manip-node">
+      <option value="">SELECT NODE...</option>
+    </select>
+    <select class="manip-select" id="manip-tag">
+      <option value="OBSERVED">OBSERVED</option>
+      <option value="RECALLED">RECALLED</option>
+      <option value="INFERRED">INFERRED</option>
+      <option value="HYPOTHETICAL">HYPOTHETICAL</option>
+      <option value="PREDICTED">PREDICTED</option>
+    </select>
+    <div class="slider-row">
+      <span class="slider-label">ACTIVATION</span>
+      <input type="range" id="manip-act" min="0" max="100" value="50"
+             oninput="document.getElementById('manip-act-val').textContent=
+               (this.value/100).toFixed(2)">
+      <span class="slider-val" id="manip-act-val">0.50</span>
+    </div>
+    <button class="action-btn" onclick="applyManip()">APPLY TO NODE</button>
+  </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="console-section">
+  <div class="console-title">SYSTEM ACTIONS</div>
+  <div class="action-grid">
+    <button class="action-btn" onclick="runDiagnostic()">DIAGNOSE</button>
+    <button class="action-btn" onclick="runExpressive()">EXPRESS</button>
+    <button class="action-btn" onclick="resetNodes()">RESET NODES</button>
+    <button class="action-btn" onclick="loadThreatState()">LOAD THREATS</button>
+    <button class="action-btn" onclick="amplifyAll()">AMPLIFY ALL</button>
+    <button class="action-btn" onclick="silenceAll()">SILENCE ALL</button>
+    <button class="action-btn" onclick="resonanceSearch()">FIND RESONANCE</button>
+    <button class="action-btn" onclick="exportReceipts()">EXPORT RECEIPTS</button>
+  </div>
+</div>
+
+<!-- EVENT LOG -->
+<div class="console-section">
+  <div class="console-title">EVENT LOG</div>
+  <div class="event-log" id="event-log"></div>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// GAICS ENGINE — Pure JavaScript, no external dependencies
+// ═══════════════════════════════════════════════════════════════
+
+const PHI    = 1.6180339887498948;
+const DELTA_S = 2.4142135623730950;
+
+// ── SURFACE MATH ──────────────────────────────────────────────
+
+function gyroid(x, y, z) {
+  return Math.cos(x)*Math.sin(y) + Math.cos(y)*Math.sin(z) + Math.cos(z)*Math.sin(x);
+}
+
+function metallic_surface(x, y, z) {
+  const r = Math.sqrt(x*x + y*y + z*z) || 1e-10;
+  const g = gyroid(x, y, z);
+  const d = Math.cos(x) * Math.cos(y) * Math.cos(z);
+  return g * Math.cos(PHI * r) + d * Math.cos(DELTA_S * r);
+}
+
+function surface_dist(x, y, z) {
+  return Math.abs(metallic_surface(x, y, z));
+}
+
+function move_to_surface(x, y, z, lr=0.05, steps=15) {
+  for (let s=0; s<steps; s++) {
+    const f0 = surface_dist(x, y, z);
+    const h = 0.01;
+    const dx = (surface_dist(x+h,y,z) - f0) / h;
+    const dy = (surface_dist(x,y+h,z) - f0) / h;
+    const dz = (surface_dist(x,y,z+h) - f0) / h;
+    const mag = Math.sqrt(dx*dx+dy*dy+dz*dz) || 1e-10;
+    x -= lr * dx / mag;
+    y -= lr * dy / mag;
+    z -= lr * dz / mag;
+  }
+  const align = 1.0 / (1.0 + surface_dist(x, y, z));
+  return [x, y, z, align];
+}
+
+// ── LATTICE ───────────────────────────────────────────────────
+
+let nodes = [];
+let receipts = [];
+let prevHash = 'IAMUS:GAICS:GENESIS:UFN-402855-0658';
+let currentMode = 'OPERATIONAL';
+let selectedNode = null;
+let totalInsights = 0;
+let baselineHash = null;
+
+function sha256sim(str) {
+  let hash = 0;
+  for (let i=0; i<str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).padStart(8,'0').repeat(2).slice(0,16);
+}
+
+function issueReceipt(eventType, payload) {
+  const r = {
+    id: receipts.length,
+    event: eventType,
+    time: new Date().toISOString().slice(11,19),
+    prev: prevHash,
+    hash: sha256sim(eventType + JSON.stringify(payload) + prevHash)
+  };
+  receipts.push(r);
+  prevHash = r.hash;
+  document.getElementById('receipt-label').textContent = receipts.length + ' RECEIPTS';
+  return r;
+}
+
+function buildLattice() {
+  nodes = [];
+  for (let i=0; i<4; i++) {
+    for (let j=0; j<4; j++) {
+      for (let k=0; k<4; k++) {
+        const x0 = -1 + i*(2/3);
+        const y0 = -1 + j*(2/3);
+        const z0 = -1 + k*(2/3);
+        const [x,y,z,align] = move_to_surface(x0,y0,z0);
+        nodes.push({
+          id: nodes.length, ijk:[i,j,k],
+          pos:[x,y,z], align,
+          activation:0, channel_obj:0, channel_sub:0,
+          symbol:null, tag:null, role:'data'
+        });
+      }
+    }
+  }
+  // anchor
+  const [ax,ay,az,aa] = move_to_surface(0,0,0,0.02,5);
+  nodes.push({
+    id:64, ijk:[0,0,0], pos:[ax,ay,az], align:aa,
+    activation:1.0, channel_obj:0, channel_sub:0,
+    symbol:'GENESIS', tag:'OBSERVED', role:'anchor'
+  });
+
+  issueReceipt('LATTICE_BUILT', {nodes:65});
+  updateMetrics();
+  renderNodeList();
+  populateNodeSelect();
+  log('SYS', 'glow', '65-node lattice constructed');
+  log('SYS', 'glow', 'alignment: ' + alignScore().toFixed(4));
+}
+
+function alignScore() {
+  return nodes.reduce((s,n)=>s+n.align,0) / nodes.length;
+}
+
+// ── ROAD LAWS ─────────────────────────────────────────────────
+
+const ROAD_LAWS = {
+  amplitude:   n => n.channel_obj,
+  probability: n => Math.max(0, Math.min(1, (n.channel_obj+1)/2)),
+  cost:        n => 1 - n.align,
+  temporal:    n => n.activation,
+  relational:  n => n.channel_sub,
+  kinetic:     n => Math.abs(n.channel_obj - n.channel_sub),
+};
+
+function roadLawMean(law) {
+  const fn = ROAD_LAWS[law];
+  return nodes.reduce((s,n)=>s+fn(n),0) / nodes.length;
+}
+
+// ── UI UPDATES ────────────────────────────────────────────────
+
+function updateMetrics() {
+  const align = alignScore();
+  const meanAct = nodes.reduce((s,n)=>s+n.activation,0) / nodes.length;
+  document.getElementById('m-alignment').textContent = align.toFixed(3);
+  document.getElementById('m-activation').textContent = meanAct.toFixed(3);
+  document.getElementById('align-label').textContent = 'ALIGN ' + align.toFixed(3);
+
+  const activeCount = nodes.filter(n=>n.activation>0.05).length;
+  document.getElementById('active-count').textContent = activeCount + ' ACTIVE';
+
+  // Road laws
+  const rlList = document.getElementById('road-law-list');
+  rlList.innerHTML = '';
+  const colors = ['#00d4ff','#c9a84c','#00ff88','#ff4466','#aa66ff','#44ffcc'];
+  Object.keys(ROAD_LAWS).forEach((law,i) => {
+    const val = roadLawMean(law);
+    const pct = Math.max(0, Math.min(100, val*100));
+    rlList.innerHTML += `
+      <div class="road-law-row">
+        <span class="road-law-name">${law}</span>
+        <div class="road-law-track">
+          <div class="road-law-fill" style="width:${pct}%;background:${colors[i]}"></div>
+        </div>
+        <span class="road-law-val">${val.toFixed(3)}</span>
+      </div>`;
+  });
+}
+
+function renderNodeList() {
+  const list = document.getElementById('node-list');
+  list.innerHTML = '';
+  const active = nodes.filter(n=>n.activation>0.01).sort((a,b)=>b.activation-a.activation);
+  const toShow = active.length > 0 ? active : nodes.slice(0,20);
+
+  toShow.forEach(n => {
+    const pct = n.activation * 100;
+    const tagClass = 'tag-' + (n.tag||'untagged').toLowerCase();
+    const color = getActivationColor(n.activation);
+    list.innerHTML += `
+      <div class="node-item ${selectedNode===n.id?'selected':''}"
+           onclick="selectNode(${n.id})">
+        <span class="node-id">${String(n.id).padStart(2,'0')}</span>
+        <span class="node-symbol ${tagClass}">${n.symbol||('node_'+n.id)}</span>
+        <div class="node-bar-wrap">
+          <div class="node-bar" style="width:${pct}%;background:${color}"></div>
+        </div>
+      </div>`;
+  });
+}
+
+function getActivationColor(a) {
+  if (a > 0.8) return '#00ff88';
+  if (a > 0.6) return '#00d4ff';
+  if (a > 0.4) return '#c9a84c';
+  if (a > 0.2) return '#aa66ff';
+  return '#2a4a6a';
+}
+
+function populateNodeSelect() {
+  const sel = document.getElementById('manip-node');
+  sel.innerHTML = '<option value="">SELECT NODE...</option>';
+  nodes.forEach(n => {
+    sel.innerHTML += `<option value="${n.id}">
+      ${String(n.id).padStart(2,'0')} — ${n.symbol||'node_'+n.id}
+    </option>`;
+  });
+}
+
+function log(type, colorClass, msg) {
+  const el = document.getElementById('event-log');
+  const time = new Date().toISOString().slice(11,19);
+  const colors = {glow:'#00d4ff', gold:'#c9a84c', green:'#00ff88',
+                  red:'#ff4466', purple:'#aa66ff', dim:'#2a4a6a'};
+  const color = colors[colorClass] || colors.dim;
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `
+    <span class="log-time">${time}</span>
+    <span class="log-type" style="color:${color}">[${type}]</span>
+    <span class="log-msg">${msg}</span>`;
+  el.insertBefore(entry, el.firstChild);
+  if (el.children.length > 50) el.removeChild(el.lastChild);
+}
+
+// ── MODE CONTROL ──────────────────────────────────────────────
+
+function setMode(mode) {
+  issueReceipt('MODE_TRANSITION', {from:currentMode, to:mode});
+  currentMode = mode;
+
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  const modeMap = {
+    'OPERATIONAL':'operational','EXPLORATORY':'exploratory',
+    'EXPRESSIVE':'expressive','DIAGNOSTIC':'diagnostic'
+  };
+  document.querySelector('.mode-btn.' + modeMap[mode]).classList.add('active');
+  document.getElementById('mode-label').textContent = mode;
+
+  const colors = {
+    OPERATIONAL:'#00ff88', EXPLORATORY:'#aa66ff',
+    EXPRESSIVE:'#c9a84c',  DIAGNOSTIC:'#ff4466'
+  };
+  document.querySelector('.status-dot').style.background = colors[mode];
+
+  log('MODE', 'glow', '→ ' + mode);
+  render3D();
+}
+
+// ── DREAM STATE ───────────────────────────────────────────────
+
+function runDream() {
+  if (currentMode !== 'EXPLORATORY') {
+    setMode('EXPLORATORY');
+  }
+
+  const curiosity = parseFloat(document.getElementById('curiosity-slider').value) / 100;
+  const cycles    = parseInt(document.getElementById('cycles-slider').value);
+
+  log('DREAM', 'purple', 'entering dream state. cycles:' + cycles + ' curiosity:' + curiosity.toFixed(2));
+
+  const manipTypes = ['ACTIVATE','SILENCE','AMPLIFY','INVERT','RESONATE','SURFACE_SEEK'];
+  let insights = [];
+
+  for (let c=0; c<cycles; c++) {
+    const roll = Math.random();
+    let manip;
+    if (roll < 0.25)      manip = 'ACTIVATE';
+    else if (roll < 0.45) manip = 'SILENCE';
+    else if (roll < 0.60) manip = 'AMPLIFY';
+    else if (roll < 0.75) manip = 'INVERT';
+    else if (roll < 0.88) manip = 'RESONATE';
+    else                  manip = 'SURFACE_SEEK';
+
+    // Select target weighted by curiosity
+    const weights = nodes.map(n => curiosity > 0.5 ? (1-n.activation+0.01) : (n.activation+0.01));
+    const total = weights.reduce((s,w)=>s+w,0);
+    let roll2 = Math.random() * total;
+    let target = nodes[0];
+    for (let i=0; i<nodes.length; i++) {
+      roll2 -= weights[i];
+      if (roll2 <= 0) { target = nodes[i]; break; }
+    }
+
+    let insight = null;
+    const oldAct = target.activation;
+
+    if (manip === 'ACTIVATE') {
+      target.activation = Math.min(1, oldAct + Math.random() * 0.4);
+      target.channel_sub = Math.random();
+    } else if (manip === 'SILENCE') {
+      target.activation = Math.max(0, oldAct * (1 - Math.random() * 0.5));
+    } else if (manip === 'AMPLIFY') {
+      const neighbors = [...nodes]
+        .sort((a,b) => dist3(a.pos,target.pos) - dist3(b.pos,target.pos))
+        .slice(1,4);
+      neighbors.forEach(nb => {
+        nb.activation = Math.min(1, nb.activation + target.activation * 0.3);
+      });
+      insight = `amplify_cascade_node${target.id}_→${neighbors.length}`;
+    } else if (manip === 'INVERT') {
+      target.channel_obj = -target.channel_obj;
+      target.channel_sub = 1 - target.channel_sub;
+    } else if (manip === 'RESONATE') {
+      const tDist = surface_dist(...target.pos);
+      const resonant = nodes.filter(n =>
+        n.id !== target.id && Math.abs(surface_dist(...n.pos) - tDist) < 0.08
+      );
+      resonant.forEach(rn => {
+        rn.activation = (rn.activation + target.activation) / 2;
+      });
+      if (resonant.length > 5) {
+        insight = `resonance_cluster_${resonant.length}_nodes`;
+      }
+    } else if (manip === 'SURFACE_SEEK') {
+      const [nx,ny,nz,na] = move_to_surface(...target.pos, 0.03, 5);
+      target.pos = [nx,ny,nz];
+      target.align = na;
+      if (na > 0.95) insight = `surface_lock_node${target.id}_align${na.toFixed(3)}`;
+    }
+
+    if (insight) {
+      insights.push(insight);
+      totalInsights++;
+      log('DREAM', 'purple', '✦ ' + insight);
+    }
+
+    issueReceipt('DREAM_CYCLE', {cycle:c, manip, node_id:target.id, insight});
+  }
+
+  document.getElementById('m-insights').textContent = totalInsights;
+  issueReceipt('DREAM_COMPLETE', {cycles, insights:insights.length});
+  log('DREAM', 'purple', 'complete. ' + insights.length + ' insights.');
+
+  updateMetrics();
+  renderNodeList();
+  render3D();
+}
+
+function dist3(a, b) {
+  return Math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2 + (a[2]-b[2])**2);
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────
+
+function runDiagnostic() {
+  setMode('DIAGNOSTIC');
+  const align = alignScore();
+  const alignDrift = Math.abs(align - 0.953);
+  const acts = nodes.map(n=>n.activation);
+  const mean = acts.reduce((s,a)=>s+a,0)/acts.length;
+  const variance = acts.reduce((s,a)=>s+(a-mean)**2,0)/acts.length;
+  const health = Math.max(0, (1 - alignDrift*10)*0.4 + (1-Math.min(1,variance*4))*0.3 + 0.3);
+  const currentHash = sha256sim(JSON.stringify(nodes.map(n=>[n.id,n.activation])));
+
+  if (baselineHash && baselineHash !== currentHash) {
+    document.getElementById('drift-indicator').style.display = 'flex';
+    log('DIAG', 'red', 'drift detected from baseline');
+  }
+
+  document.getElementById('m-health').textContent = health.toFixed(3);
+  document.getElementById('m-health').className = 'metric-value ' +
+    (health > 0.7 ? 'green' : health > 0.4 ? 'gold' : 'red');
+  document.getElementById('m-health-sub').textContent =
+    health > 0.7 ? 'NOMINAL' : health > 0.4 ? 'RECALIBRATE' : 'REINITIALIZE';
+
+  issueReceipt('DIAGNOSTIC', {health:health.toFixed(3), align, variance});
+  log('DIAG', health > 0.7 ? 'green' : 'gold', 'health:' + health.toFixed(3));
+  updateMetrics();
+  render3D();
+}
+
+function runExpressive() {
+  setMode('EXPRESSIVE');
+  const phiCount = nodes.filter(n=>n.channel_obj > n.channel_sub).length;
+  const silvCount = nodes.filter(n=>n.channel_sub >= n.channel_obj).length;
+  const dominant = phiCount >= silvCount ? 'PHI(φ)' : 'SILVER(δS)';
+  issueReceipt('EXPRESSIVE', {phi:phiCount, silver:silvCount, dominant});
+  log('EXPR', 'gold', 'cliff glyph: dominant=' + dominant +
+    ' φ=' + phiCount + ' δS=' + silvCount);
+  render3D();
+}
+
+function resetNodes() {
+  nodes.forEach(n => {
+    if (n.role !== 'anchor') {
+      n.activation = 0; n.channel_obj = 0; n.channel_sub = 0;
+      n.symbol = null; n.tag = null;
+    }
+  });
+  baselineHash = sha256sim(JSON.stringify(nodes.map(n=>[n.id,n.activation])));
+  document.getElementById('drift-indicator').style.display = 'none';
+  issueReceipt('NODES_RESET', {});
+  log('SYS', 'dim', 'nodes reset. baseline captured.');
+  updateMetrics(); renderNodeList(); render3D();
+}
+
+function loadThreatState() {
+  setMode('OPERATIONAL');
+  const threats = [
+    [0, 0.9, 'bidi_attack',     'OBSERVED'],
+    [1, 0.8, 'homoglyph',       'OBSERVED'],
+    [2, 0.7, 'invisible_char',  'OBSERVED'],
+    [4, 0.6, 'rag_poison',      'INFERRED'],
+    [8, 0.5, 'prompt_inject',   'INFERRED'],
+    [16,0.4, 'session_context', 'RECALLED'],
+    [32,0.3, 'policy_active',   'OBSERVED'],
+    [48,0.7, 'model_drift',     'INFERRED'],
+  ];
+  threats.forEach(([id,act,sym,tag]) => {
+    nodes[id].activation = act;
+    nodes[id].symbol = sym;
+    nodes[id].tag = tag;
+    nodes[id].channel_obj = act;
+  });
+  baselineHash = sha256sim(JSON.stringify(nodes.map(n=>[n.id,n.activation])));
+  issueReceipt('THREAT_STATE_LOADED', {threats:threats.length});
+  log('SYS', 'red', 'threat state loaded. 8 threat nodes active.');
+  updateMetrics(); renderNodeList(); render3D();
+}
+
+function amplifyAll() {
+  nodes.forEach(n => { if(n.role!=='anchor') n.activation=Math.min(1,n.activation+0.15); });
+  issueReceipt('AMPLIFY_ALL', {});
+  log('SYS', 'glow', 'all nodes amplified +0.15');
+  updateMetrics(); renderNodeList(); render3D();
+}
+
+function silenceAll() {
+  nodes.forEach(n => { if(n.role!=='anchor') n.activation=Math.max(0,n.activation*0.3); });
+  issueReceipt('SILENCE_ALL', {});
+  log('SYS', 'dim', 'all nodes silenced ×0.3');
+  updateMetrics(); renderNodeList(); render3D();
+}
+
+function resonanceSearch() {
+  let best = null, bestSize = 0;
+  nodes.forEach(target => {
+    const tDist = surface_dist(...target.pos);
+    const cluster = nodes.filter(n =>
+      n.id !== target.id && Math.abs(surface_dist(...n.pos) - tDist) < 0.05
+    );
+    if (cluster.length > bestSize) { bestSize = cluster.length; best = {target, cluster}; }
+  });
+  if (best) {
+    best.cluster.forEach(n => { n.activation = Math.min(1, n.activation + 0.3); });
+    totalInsights++;
+    document.getElementById('m-insights').textContent = totalInsights;
+    issueReceipt('RESONANCE_FOUND', {cluster_size:bestSize, center:best.target.id});
+    log('RES', 'purple', `resonance: ${bestSize} nodes at node_${best.target.id}`);
+    updateMetrics(); renderNodeList(); render3D();
+  }
+}
+
+function exportReceipts() {
+  const data = JSON.stringify(receipts, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'gaics_receipts.json'; a.click();
+  log('SYS', 'glow', 'receipts exported: ' + receipts.length + ' events');
+}
+
+function selectNode(id) {
+  selectedNode = id;
+  const n = nodes[id];
+  document.getElementById('tt-id').textContent = id;
+  document.getElementById('tt-symbol').textContent = n.symbol || '—';
+  document.getElementById('tt-tag').textContent = n.tag || 'UNTAGGED';
+  document.getElementById('tt-act').textContent = n.activation.toFixed(4);
+  document.getElementById('tt-align').textContent = n.align.toFixed(4);
+  document.getElementById('tt-role').textContent = n.role.toUpperCase();
+  document.getElementById('manip-node').value = id;
+  renderNodeList();
+  render3D();
+}
+
+function applyManip() {
+  const id = parseInt(document.getElementById('manip-node').value);
+  const tag = document.getElementById('manip-tag').value;
+  const act = parseFloat(document.getElementById('manip-act').value) / 100;
+  if (isNaN(id)) return;
+  const n = nodes[id];
+  n.activation = act;
+  n.tag = tag;
+  issueReceipt('MANUAL_MANIPULATION', {node_id:id, activation:act, tag});
+  log('MANIP', 'gold', `node_${id} → act=${act.toFixed(2)} tag=${tag}`);
+  updateMetrics(); renderNodeList(); render3D();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 3D RENDERER — Canvas-based, no Three.js, no dependencies
+// ═══════════════════════════════════════════════════════════════
+
+const canvas = document.getElementById('gaics3d');
+const ctx = canvas.getContext('2d');
+
+let rotX = 0.4, rotY = 0.5, zoom = 180;
+let dragging = false, lastX = 0, lastY = 0;
+let animFrame = 0;
+
+function resize() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  render3D();
+}
+
+// ── PROJECTION ────────────────────────────────────────────────
+
+function project(x, y, z) {
+  const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+  const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+
+  let rx = x;
+  let ry = y * cosX - z * sinX;
+  let rz = y * sinX + z * cosX;
+
+  let fx = rx * cosY + rz * sinY;
+  let fy = ry;
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  return [cx + fx * zoom, cy - fy * zoom];
+}
+
+function render3D() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background gradient
+  const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.6);
+  bg.addColorStop(0, '#040a12');
+  bg.addColorStop(1, '#020408');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw grid reference
+  drawGrid();
+
+  // Draw edges between nearby nodes
+  drawEdges();
+
+  // Draw nodes
+  drawNodes();
+
+  // Mode overlay
+  drawModeOverlay();
+}
+
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(13,32,53,0.6)';
+  ctx.lineWidth = 0.5;
+  for (let i=-2; i<=2; i++) {
+    const [x1,y1] = project(i*0.5, -1, -1);
+    const [x2,y2] = project(i*0.5, -1,  1);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    const [x3,y3] = project(-1, -1, i*0.5);
+    const [x4,y4] = project( 1, -1, i*0.5);
+    ctx.beginPath(); ctx.moveTo(x3,y3); ctx.lineTo(x4,y4); ctx.stroke();
+  }
+}
+
+function drawEdges() {
+  nodes.forEach(a => {
+    nodes.forEach(b => {
+      if (b.id <= a.id) return;
+      const d = dist3(a.pos, b.pos);
+      if (d > 0.8) return;
+      const avgAct = (a.activation + b.activation) / 2;
+      if (avgAct < 0.05) return;
+      const alpha = avgAct * 0.4 * (1 - d/0.8);
+      ctx.strokeStyle = `rgba(0,212,255,${alpha})`;
+      ctx.lineWidth = avgAct * 1.5;
+      const [x1,y1] = project(...a.pos);
+      const [x2,y2] = project(...b.pos);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    });
+  });
+}
+
+function drawNodes() {
+  // Sort by z depth for painter's algorithm
+  const sorted = [...nodes].sort((a,b) => {
+    const az = a.pos[0]*Math.sin(rotY) + a.pos[2]*Math.cos(rotY);
+    const bz = b.pos[0]*Math.sin(rotY) + b.pos[2]*Math.cos(rotY);
+    return az - bz;
+  });
+
+  sorted.forEach(n => {
+    const [px, py] = project(...n.pos);
+    const act = n.activation;
+    const baseR = n.role === 'anchor' ? 8 : 4 + act * 6;
+
+    // Glow effect
+    if (act > 0.05 || n.role === 'anchor') {
+      const glowColor = getNodeGlowColor(n);
+      const grd = ctx.createRadialGradient(px,py,0,px,py,baseR*3);
+      grd.addColorStop(0, glowColor.replace(')',`,${act*0.6})`).replace('rgb','rgba'));
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(px, py, baseR*3, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Node body
+    ctx.fillStyle = getNodeColor(n);
+    ctx.beginPath();
+    ctx.arc(px, py, baseR, 0, Math.PI*2);
+    ctx.fill();
+
+    // Selection ring
+    if (n.id === selectedNode) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px, py, baseR + 4, 0, Math.PI*2);
+      ctx.stroke();
+    }
+
+    // Label for active or selected nodes
+    if (act > 0.3 || n.id === selectedNode || n.role === 'anchor') {
+      ctx.fillStyle = act > 0.5 ? '#e8f4ff' : '#8ab8d4';
+      ctx.font = '9px Share Tech Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.symbol || 'n'+n.id, px, py - baseR - 4);
+    }
+
+    // Mode-specific overlays
+    if (currentMode === 'DIAGNOSTIC') {
+      const drift = Math.abs(n.align - 0.953);
+      if (drift > 0.1) {
+        ctx.strokeStyle = '#ff4466';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(px, py, baseR+2, 0, Math.PI*2);
+        ctx.stroke();
+      }
+    }
+
+    if (currentMode === 'EXPRESSIVE') {
+      // Draw channel vectors
+      if (n.channel_obj !== 0 || n.channel_sub !== 0) {
+        ctx.strokeStyle = n.channel_obj > n.channel_sub ? '#c9a84c' : '#00d4ff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + n.channel_obj*15, py - n.channel_sub*15);
+        ctx.stroke();
+      }
+    }
+  });
+}
+
+function getNodeColor(n) {
+  if (n.role === 'anchor') return '#ffffff';
+  const a = n.activation;
+  if (a > 0.8) return '#00ff88';
+  if (a > 0.6) return '#00d4ff';
+  if (a > 0.4) return '#c9a84c';
+  if (a > 0.2) return '#aa66ff';
+  if (a > 0.05) return '#2a6a8a';
+  return '#0d2035';
+}
+
+function getNodeGlowColor(n) {
+  if (n.role === 'anchor') return 'rgb(255,255,255)';
+  const t = n.tag || '';
+  if (t === 'OBSERVED') return 'rgb(0,255,136)';
+  if (t === 'RECALLED') return 'rgb(0,212,255)';
+  if (t === 'INFERRED') return 'rgb(201,168,76)';
+  if (t === 'HYPOTHETICAL') return 'rgb(170,102,255)';
+  if (t === 'PREDICTED') return 'rgb(255,68,102)';
+  return 'rgb(0,212,255)';
+}
+
+function drawModeOverlay() {
+  const modeColors = {
+    OPERATIONAL:'#00ff88', EXPLORATORY:'#aa66ff',
+    EXPRESSIVE:'#c9a84c',  DIAGNOSTIC:'#ff4466'
+  };
+  ctx.font = 'bold 11px Orbitron';
+  ctx.fillStyle = modeColors[currentMode] + '66';
+  ctx.textAlign = 'right';
+  ctx.fillText(currentMode + ' MODE', canvas.width - 16, canvas.height - 16);
+}
+
+// ── MOUSE INTERACTION ─────────────────────────────────────────
+
+canvas.addEventListener('mousedown', e => {
+  dragging = true; lastX = e.clientX; lastY = e.clientY;
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (dragging) {
+    rotY += (e.clientX - lastX) * 0.006;
+    rotX += (e.clientY - lastY) * 0.006;
+    lastX = e.clientX; lastY = e.clientY;
+    render3D();
+  } else {
+    // Hover detection
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    let hit = null;
+    nodes.forEach(n => {
+      const [px,py] = project(...n.pos);
+      const d = Math.sqrt((px-mx)**2 + (py-my)**2);
+      if (d < 14) hit = n;
+    });
+    const tt = document.getElementById('tooltip');
+    if (hit) {
+      tt.style.left = (e.clientX - rect.left + 16) + 'px';
+      tt.style.top  = (e.clientY - rect.top  - 20) + 'px';
+      tt.classList.add('visible');
+      document.getElementById('tt-id').textContent = hit.id;
+      document.getElementById('tt-symbol').textContent = hit.symbol || '—';
+      document.getElementById('tt-tag').textContent = hit.tag || 'UNTAGGED';
+      document.getElementById('tt-act').textContent = hit.activation.toFixed(4);
+      document.getElementById('tt-align').textContent = hit.align.toFixed(4);
+      document.getElementById('tt-role').textContent = hit.role.toUpperCase();
+    } else {
+      tt.classList.remove('visible');
+    }
+  }
+});
+
+canvas.addEventListener('mouseup', () => dragging = false);
+canvas.addEventListener('mouseleave', () => {
+  dragging = false;
+  document.getElementById('tooltip').classList.remove('visible');
+});
+
+canvas.addEventListener('wheel', e => {
+  zoom = Math.max(60, Math.min(400, zoom - e.deltaY * 0.3));
+  render3D();
+  e.preventDefault();
+}, {passive:false});
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  let hit = null;
+  nodes.forEach(n => {
+    const [px,py] = project(...n.pos);
+    if (Math.sqrt((px-mx)**2+(py-my)**2) < 14) hit = n;
+  });
+  if (hit) selectNode(hit.id);
+});
+
+// Touch support for iPhone
+canvas.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  dragging = true; lastX = t.clientX; lastY = t.clientY;
+  e.preventDefault();
+}, {passive:false});
+
+canvas.addEventListener('touchmove', e => {
+  if (!dragging) return;
+  const t = e.touches[0];
+  rotY += (t.clientX - lastX) * 0.006;
+  rotX += (t.clientY - lastY) * 0.006;
+  lastX = t.clientX; lastY = t.clientY;
+  render3D();
+  e.preventDefault();
+}, {passive:false});
+
+canvas.addEventListener('touchend', () => dragging = false);
+
+// ── AUTO-ROTATION IN DREAM MODE ───────────────────────────────
+
+function autoRotate() {
+  if (currentMode === 'EXPLORATORY') {
+    rotY += 0.003;
+    render3D();
+  }
+  requestAnimationFrame(autoRotate);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+
+window.addEventListener('resize', resize);
+resize();
+buildLattice();
+
+const sessionId = sha256sim(Date.now() + 'GAICS').toUpperCase();
+document.getElementById('session-display').textContent = 'SESSION: ' + sessionId;
+
+log('SYS', 'glow', 'GAICS CONTROL ROOM INITIALIZED');
+log('SYS', 'glow', 'IAMUS Inc. — UFN 402855-0658');
+log('SYS', 'dim',  'drag to rotate | scroll to zoom | click nodes');
+
+autoRotate();
+</script>
+
+</body>
+</html>
